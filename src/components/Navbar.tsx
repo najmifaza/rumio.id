@@ -33,9 +33,17 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Beranda", href: "/", isActive: pathname === "/" },
-    { name: "Layanan", href: "/#layanan", isActive: false },
-    { name: "Properti", href: "/properti", isActive: pathname.startsWith("/properti") },
+    {
+      name: "Properti",
+      href: "/properti",
+      isActive: pathname.startsWith("/properti"),
+    },
     { name: "Blog", href: "/blog", isActive: pathname.startsWith("/blog") },
+    {
+      name: "Pricing",
+      href: "/pricing",
+      isActive: pathname.startsWith("/pricing"),
+    },
     { name: "Tentang Kami", href: "/#tentang-kami", isActive: false },
     { name: "Property Scout", href: "/#property-scout", isActive: false },
   ];
