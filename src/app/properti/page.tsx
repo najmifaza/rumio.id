@@ -371,8 +371,13 @@ export default function PropertiesPage() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Desktop Sidebar Filter */}
           <div className="hidden lg:block w-[300px] xl:w-[320px] shrink-0">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sticky top-28">
-              <h2 className="text-lg font-bold text-[#0B1528] mb-6">Filter</h2>
+            <div
+              className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sticky top-28 max-h-[85vh] overflow-y-auto no-scrollbar"
+              data-lenis-prevent
+            >
+              <h2 className="text-lg font-bold text-[#0B1528] mb-6 flex flex-row gap-3 items-center">
+                <Filter className="w-4 h-4" /> Filter
+              </h2>
               {renderFilterContent()}
             </div>
           </div>

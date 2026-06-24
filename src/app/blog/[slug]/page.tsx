@@ -2,7 +2,8 @@ import { getBlogData, getAllBlogs } from "@/lib/blog";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
-import { Clock, Calendar, ArrowLeft } from "lucide-react";
+import CtaHelpCard from "@/components/ui/cta-help-card";
+import { Clock, Calendar, ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 // This allows Next.js to generate static pages for each blog
@@ -30,13 +31,13 @@ export default async function BlogDetailPage({
 
   // Artikel Terkait: kategori sama, kecualikan artikel aktif saat ini
   let relatedPosts = allBlogs.filter(
-    (b) => b.category === blog.category && b.slug !== slug
+    (b) => b.category === blog.category && b.slug !== slug,
   );
 
   // Jika artikel dengan kategori sama kurang dari 3, isi dengan artikel terbaru lainnya
   if (relatedPosts.length < 3) {
     const fallbackPosts = allBlogs.filter(
-      (b) => b.slug !== slug && !relatedPosts.some((r) => r.slug === b.slug)
+      (b) => b.slug !== slug && !relatedPosts.some((r) => r.slug === b.slug),
     );
     relatedPosts = [...relatedPosts, ...fallbackPosts].slice(0, 3);
   } else {
@@ -44,7 +45,7 @@ export default async function BlogDetailPage({
   }
 
   // Blog Populer: Ambil artikel lain (misal 3 artikel pertama)
-  const popularPosts = allBlogs.filter((b) => b.slug !== slug).slice(0, 4);
+  const popularPosts = allBlogs.filter((b) => b.slug !== slug).slice(0, 3);
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20 font-sans pt-28">
@@ -64,13 +65,13 @@ export default async function BlogDetailPage({
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-start">
           {/* Main Content Area (Left) */}
           <div className="w-full lg:w-2/3 xl:w-8/12">
-            <article className="bg-white p-6 md:p-12 rounded-3xl shadow-sm border border-slate-100">
+            <article className=" border-slate-100">
               {/* Header */}
               <header className="mb-8 text-left">
                 <span className="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-4 inline-block">
                   {blog.category}
                 </span>
-                
+
                 <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#0B1528] mb-6 leading-tight">
                   {blog.title}
                 </h1>
@@ -104,8 +105,8 @@ export default async function BlogDetailPage({
 
             {/* Footer actions */}
             <div className="mt-8">
-              <Link 
-                href="/blog" 
+              <Link
+                href="/blog"
                 className="inline-flex items-center gap-2 text-slate-500 hover:text-amber-600 transition-colors font-medium"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -115,24 +116,24 @@ export default async function BlogDetailPage({
           </div>
 
           {/* Sidebar (Right) - Blog Populer */}
-          <div className="w-full lg:w-1/3 xl:w-4/12 lg:sticky lg:top-28">
+          <div className="w-full lg:w-1/3 xl:w-4/12 lg:sticky lg:top-28 flex flex-col gap-6">
             <div className="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8 shadow-sm">
               <h3 className="text-[19px] font-bold text-[#0B1528] mb-6 border-b border-slate-100 pb-3">
                 Blog Populer
               </h3>
-              
+
               <div className="flex flex-col gap-6">
                 {popularPosts.map((post) => (
-                  <Link 
-                    href={`/blog/${post.slug}`} 
-                    key={post.slug} 
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    key={post.slug}
                     className="flex gap-4 group cursor-pointer"
                   >
                     <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-slate-100">
-                      <img 
-                        src={post.image} 
-                        alt={post.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                     <div className="flex flex-col justify-center min-w-0">
@@ -149,27 +150,30 @@ export default async function BlogDetailPage({
                   </Link>
                 ))}
               </div>
-            </div>
+            </div>{" "}
+            <CtaHelpCard />
           </div>
         </div>
 
         {/* Related Posts Section (Bottom) */}
         {relatedPosts.length > 0 && (
           <div className="mt-16 border-t border-slate-200 pt-16">
-            <h3 className="text-2xl font-bold text-[#0B1528] mb-8">Artikel Terkait</h3>
-            
+            <h3 className="text-2xl font-bold text-[#0B1528] mb-8">
+              Artikel Terkait
+            </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {relatedPosts.map((post) => (
-                <Link 
-                  href={`/blog/${post.slug}`} 
-                  key={post.slug} 
+                <Link
+                  href={`/blog/${post.slug}`}
+                  key={post.slug}
                   className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:shadow-md transition-shadow group flex flex-col h-full cursor-pointer"
                 >
                   <div className="w-full aspect-[16/10] rounded-xl overflow-hidden mb-4">
-                    <img 
-                      src={post.image} 
-                      alt={post.title} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-400 mb-2">
@@ -186,7 +190,9 @@ export default async function BlogDetailPage({
                   </p>
                   <span className="text-xs font-bold text-amber-600 group-hover:text-amber-700 transition-colors inline-flex items-center gap-1">
                     Baca Selengkapnya
-                    <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+                    <span className="group-hover:translate-x-0.5 transition-transform">
+                      &rarr;
+                    </span>
                   </span>
                 </Link>
               ))}

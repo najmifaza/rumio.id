@@ -87,14 +87,16 @@ export default function Navbar() {
           </nav>
 
           {/* DESKTOP BUTTON */}
-          <Button
-            variant="outlineAmber"
-            size="nav"
-            className="hidden md:inline-flex gap-2"
-          >
-            <MessageCircle className="w-4 h-4 text-slate-500" />
-            Hubungi Kami
-          </Button>
+          <div className="hidden md:block">
+            <Button
+              variant="outlineAmber"
+              size="nav"
+              className="inline-flex gap-2"
+            >
+              <MessageCircle className="w-4 h-4 text-slate-500" />
+              Hubungi Kami
+            </Button>
+          </div>
 
           {/* MOBILE HAMBURGER BUTTON */}
           <Button
