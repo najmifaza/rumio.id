@@ -28,7 +28,7 @@ graph TD
 
 ## 2. Alur Pengunjung (Visitor Flow)
 
-Alur interaksi ketika calon pembeli menelusuri website, melihat properti, hingga memberikan data prospek (Lead) atau mengirim pesan WhatsApp.
+Alur interaksi ketika calon pembeli menelusuri website, melihat properti, hingga mengirim pesan WhatsApp.
 
 ```mermaid
 sequenceDiagram
@@ -42,15 +42,9 @@ sequenceDiagram
     DB-->>Next: Kembalikan data JSON
     Next-->>User: Tampilkan UI (Foto, Deskripsi, Tour 360)
 
-    alt Mengisi Form Leads
-        User->>Next: Submit (Nama, HP, Pesan)
-        Next->>DB: INSERT data ke tabel 'leads'
-        Next-->>User: Tampilkan Notifikasi "Terkirim"
-    else Klik Tombol WhatsApp
-        User->>Next: Klik "Hubungi via WhatsApp"
-        Next->>WA: Buka link (wa.me/nomor?text=halo...)
-        WA-->>User: Buka aplikasi WhatsApp di HP/PC
-    end
+    User->>Next: Klik "Hubungi via WhatsApp"
+    Next->>WA: Buka link (wa.me/nomor?text=halo...)
+    WA-->>User: Buka aplikasi WhatsApp di HP/PC
 ```
 
 ---
@@ -69,7 +63,6 @@ flowchart TD
 
     Dashboard --> Action1(Manajemen Properti)
     Dashboard --> Action2(Manajemen Blog)
-    Dashboard --> Action3(Lihat Tabel Leads)
 
     Action1 --> Form(Isi Form & Pilih Foto)
     Action2 --> Form

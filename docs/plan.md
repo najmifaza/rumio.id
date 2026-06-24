@@ -20,11 +20,11 @@ Dokumen ini berisi rencana pengembangan untuk **Rumio.id** menggunakan arsitektu
 
 ### Referensi Desain per Halaman
 
-| Halaman | URL Referensi | Keterangan |
-| --- | --- | --- |
-| **Homepage** | [vistahaven.framer.website](https://vistahaven.framer.website/) | Referensi desain hero, layout, dan estetika halaman utama. |
-| **Listing / Search Properti** | [homplus.framer.website/search](https://homplus.framer.website/search) | Referensi tampilan daftar properti, filter, dan card layout. |
-| **Detail Properti** | [homplus.framer.website/property-details/smart-glass-house](https://homplus.framer.website/property-details/smart-glass-house) | Referensi struktur dan komponen halaman landing page properti. |
+| Halaman                       | URL Referensi                                                                                                                  | Keterangan                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| **Homepage**                  | [vistahaven.framer.website](https://vistahaven.framer.website/)                                                                | Referensi desain hero, layout, dan estetika halaman utama.     |
+| **Listing / Search Properti** | [homplus.framer.website/search](https://homplus.framer.website/search)                                                         | Referensi tampilan daftar properti, filter, dan card layout.   |
+| **Detail Properti**           | [homplus.framer.website/property-details/smart-glass-house](https://homplus.framer.website/property-details/smart-glass-house) | Referensi struktur dan komponen halaman landing page properti. |
 
 ---
 
@@ -46,9 +46,8 @@ Dokumen ini berisi rencana pengembangan untuk **Rumio.id** menggunakan arsitektu
 - **`@photo-sphere-viewer/core`**: Library utama yang direkomendasikan untuk me-render gambar panorama (_equirectangular_) menjadi Virtual Tour 360° yang interaktif. Akan menggunakan `virtual-tour-plugin` untuk navigasi antar ruangan. (Sistem berjalan 100% _self-hosted_).
 - **`react-markdown`** atau **`next-mdx-remote`**: Untuk merender konten artikel blog dari format Markdown ke HTML di frontend.
 - **`qrcode.react`**: Untuk men-_generate_ QR code URL properti secara otomatis di sisi klien.
-- **`react-hook-form` & `zod`**: (Disarankan) Untuk menangani validasi dan pengiriman _Form Lead_ secara efisien tanpa _re-render_ berlebih.
 - **`lucide-react`** atau **`react-icons`**: Kumpulan ikon SVG modern untuk kebutuhan UI.
-- **Rich Text / Markdown Editor (CMS):** Library seperti `react-quill`, `@uiw/react-md-editor`, atau `tiptap` untuk menulis/mengedit artikel di Dashboard Admin.
+- **Markdown Editor (CMS):** Menggunakan library `easymde` (via `react-simplemde-editor`) khusus untuk kemudahan menulis dan memformat artikel Markdown di Dashboard Admin.
 
 ---
 
@@ -67,14 +66,16 @@ Dokumen ini berisi rencana pengembangan untuk **Rumio.id** menggunakan arsitektu
 
 Membuat definisi tabel di dalam file `schema.prisma` dan melakukan migrasi ke MySQL.
 
-- **Model `User` (Admin):**
-  - Kolom: `id`, `name`, `email`, `password`, `created_at`.
+- **Model `User` (Admin & Owner):**
+  - Kolom: `id`, `name`, `email`, `password`, `role` (Enum: ADMIN, OWNER), `created_at`.
 - **Model `Property`:**
-  - Kolom: `id`, `title`, `slug`, `price`, `location`, `description`, `virtual_tour_url`, `whatsapp_number`, `featured_image`, `created_at`.
-- **Model `Lead`:**
-  - Kolom: `id`, `property_id`, `nama`, `hp`, `email`, `pesan`, `created_at`.
+  - Kolom: `id`, `owner_id` (Relasi ke User), `title`, `slug`, `price`, `location`, `property_type`, `listing_type`, `condition`, `bedrooms`, `bathrooms`, `floors`, `land_area`, `building_area`, `electricity`, `water_supply`, `facing`, `build_year`, `certificate`, `description`, `view_count` (Default: 0), `virtual_tour_data`, `video_url`, `featured_image`, `created_at`.
+- **Model `PropertyImage` (Galeri):**
+  - Kolom: `id`, `property_id` (Relasi ke Property), `image_url`, `created_at`.
+- **Model `Setting` (Konfigurasi Global):**
+  - Kolom: `id`, `key` (misal: `whatsapp_number`, `dynamic_pricing`), `value`, `updated_at`.
 - **Model `Blog`:**
-  - Kolom: `id`, `title`, `slug`, `content`, `author`, `featured_image`, `created_at`.
+  - Kolom: `id`, `title`, `slug`, `content`, `author`, `featured_image`, `view_count` (Default: 0), `created_at`.
 - **Storage:** Menggunakan sistem direktori lokal (`public/uploads`) pada server Hostinger untuk menyimpan _upload_ file foto dari Admin.
   - _Catatan Development:_ Saat pengujian lokal (`localhost`), gambar akan tersimpan langsung di folder `public/uploads` pada laptop/komputer developer. Saat di-deploy ke Hostinger, gambar akan tersimpan di dalam _storage_ server Hostinger. Database MySQL hanya akan menyimpan path gambar (contoh: `/uploads/properti-1.jpg`).
 
@@ -88,9 +89,9 @@ Membangun antarmuka yang _Modern, Premium, dan Clean_ dengan warna utama Merah (
    - **Layanan / Portfolio / Blog / Contact:** Halaman informatif perusahaan.
 3. **Halaman Properti (Dynamic Route `property/[slug]`):**
    - Layout landing page khusus per properti.
-   - Integrasi iframe Virtual Tour 360.
+   - Integrasi renderer Virtual Tour 360° (Self-Hosted).
    - Floating Button WhatsApp.
-   - Form Lead properti.
+   - Tombol Booking / Hubungi Kami (Direct to WhatsApp).
 4. **Halaman Blog:**
    - **List Blog (`/blog`):** Menampilkan daftar artikel edukasi/promosi.
    - **Detail Blog (`/blog/[slug]`):** Menampilkan konten artikel penuh.
@@ -98,28 +99,29 @@ Membangun antarmuka yang _Modern, Premium, dan Clean_ dengan warna utama Merah (
 ### Phase 4: Integrasi Backend & Fitur Utama
 
 1. **Data Fetching:** Menarik data dari tabel `properties` dan `blogs` untuk ditampilkan di antarmuka publik.
-2. **Submit Form Lead:** Menyimpan data leads dari calon pembeli langsung ke tabel MySQL melalui Prisma.
-3. **QR Code Generator:** Membuat komponen yang meng-generate QR Code secara otomatis berdasarkan URL `rumio.id/property/[slug]`.
-4. **Fungsi WhatsApp:** Membuat _Action Link_ dinamis yang membuka WhatsApp dengan format pesan otomatis yang berisi nama properti.
+2. **QR Code & Banner Template:** Membuat generator QR Code yang langsung di-embed ke dalam template banner siap cetak per properti.
+3. **Fungsi WhatsApp Dinamis:** _Action Link_ yang diarahkan ke **satu nomor WA utama** (diambil dari tabel `Setting`), dengan format pesan otomatis yang dinamis menyesuaikan nama properti.
+4. **Page View Tracking:** Logika untuk menambahkan `view_count` (+1) pada tabel `Property` dan tabel `Blog` setiap kali halaman detail terkait dikunjungi oleh publik.
 
-### Phase 5: Dashboard Admin (CMS)
+### Phase 5: Dashboard (Admin & Owner)
 
-1. **Autentikasi:** Implementasi **NextAuth.js** (Credential Provider) untuk mengamankan route `/admin`.
-2. **Manajemen Properti (CRUD):**
-   - Form untuk menambah dan mengedit data properti.
-   - Fitur upload foto di mana gambar akan diunggah dan disimpan di server lokal (`public/uploads`), dilengkapi konversi ke format ringan (WebP) di sisi klien.
-   - Menampilkan daftar properti yang bisa dihapus/diubah.
-3. **Virtual Tour Builder (Interaktif):**
+1. **Autentikasi & Otorisasi:** Implementasi **NextAuth.js** dengan Role-Based Access Control (Admin & Owner).
+2. **Dashboard Owner:** Antarmuka bagi pemilik properti untuk melihat **Statistik Kunjungan** (`view_count`) dari halaman properti mereka.
+3. **Manajemen Properti & Pengaturan:**
+   - CRUD properti beserta upload foto.
+   - **Dynamic Pricing:** Pengaturan harga layanan/paket oleh Admin yang dapat berubah secara dinamis.
+   - Pengaturan nomor WhatsApp utama platform.
+4. **Virtual Tour Builder (Interaktif):**
    - Antarmuka khusus bagi Admin untuk membangun tur 360 tanpa _coding_.
-   - Menggunakan _Click Listener_ dari `@photo-sphere-viewer/core` di mana Admin dapat mengklik area foto panorama, secara otomatis mendapatkan koordinat (_Pitch_ & _Yaw_), lalu menyambungkannya dengan ruangan lain melalui _Pop-up Modal_.
-4. **Manajemen Leads:** Halaman tabel khusus untuk melihat data prospek/calon pembeli yang masuk dari form.
-5. **Manajemen Blog:** Editor artikel untuk menulis, mengedit, dan mempublikasikan postingan blog.
+   - Menggunakan _Click Listener_ dari `@photo-sphere-viewer/core`.
+5. **Manajemen Blog:** Editor artikel untuk Admin.
+6. **QR & Banner Builder:** Fitur untuk mengunduh QR Code dan template banner promosi dari dashboard.
 
 ### Phase 6: Optimasi, SEO & Deployment
 
 1. **SEO:** Implementasi Metadata API Next.js (Title, Description, Open Graph) agar setiap URL properti dan artikel blog optimal ketika dibagikan (Share link).
 2. **Tracking:** Memasang script Google Analytics dan Meta Pixel.
-3. **Testing:** Uji coba end-to-end fitur QR Code, Virtual Tour Embed, dan submit form.
+3. **Testing:** Uji coba end-to-end fitur QR Code, rendering Virtual Tour, dan integrasi WhatsApp.
 4. **Deploy:** Mengunggah kode ke GitHub dan melakukan _deployment_ penuh ke server **Hostinger** (memanfaatkan fitur Node.js App atau VPS).
 
 ---
@@ -129,10 +131,10 @@ Membangun antarmuka yang _Modern, Premium, dan Clean_ dengan warna utama Merah (
 Fokus pengerjaan untuk tahap awal akan dibatasi pada:
 
 1. Landing Page Properti dinamis.
-2. Embed Virtual Tour.
+2. Rendering Virtual Tour 360 (Self-Hosted).
 3. Generator QR Code.
-4. Tombol WhatsApp dan Form Leads.
+4. Tombol WhatsApp Dinamis.
 5. Fitur Blog & Artikel.
-6. CMS Admin Sederhana (Manajemen Properti, Leads, & Blog).
+6. CMS Admin Sederhana (Manajemen Properti & Blog).
 
 _(Fitur seperti integrasi pembayaran atau multi-agen dapat ditambahkan pada versi selanjutnya)._

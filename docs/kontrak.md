@@ -3,17 +3,17 @@
 Pada hari ini, **Minggu** tanggal **22** bulan **Juni** tahun **2026**, yang bertanda tangan di bawah ini:
 
 **1. PIHAK PERTAMA (Klien)**
-Nama Lengkap : ****\*\*****\_\_\_****\*\*****
-Jabatan : ****\*\*****\_\_\_****\*\*****
-Alamat : ****\*\*****\_\_\_****\*\*****
-No. Telepon : ****\*\*****\_\_\_****\*\*****
+Nama Lengkap : Setyo Yudika Wiranto
+Jabatan : CEO Rumio ID
+Alamat : Jl. Karangbenda Raya, Perum Mega Asri Regency Blok C.10 Berkoh, Purwokerto Selatan
+No. Telepon : +62 819-7909-572
 Selanjutnya disebut sebagai **PIHAK PERTAMA**.
 
 **2. PIHAK KEDUA (Developer)**
-Nama Lengkap : ****\*\*****\_\_\_****\*\*****
+Nama Lengkap : \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 Pekerjaan : Freelance Web Developer
-Alamat : ****\*\*****\_\_\_****\*\*****
-No. Telepon : ****\*\*****\_\_\_****\*\*****
+Alamat : \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
+No. Telepon : \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 Selanjutnya disebut sebagai **PIHAK KEDUA**.
 
 Secara bersama-sama, Pihak Pertama dan Pihak Kedua selanjutnya disebut sebagai **PARA PIHAK**. Para Pihak sepakat untuk mengadakan perjanjian kerjasama pembuatan website dengan ketentuan sebagai berikut:
@@ -39,9 +39,9 @@ Secara bersama-sama, Pihak Pertama dan Pihak Kedua selanjutnya disebut sebagai *
 
 1. Total biaya pembuatan website RUMIO.ID yang disepakati adalah sebesar **Rp 0.000.000** _(Dua Juta Lima Ratus Ribu Rupiah)_.
 2. Pembayaran akan dilakukan oleh PIHAK PERTAMA kepada PIHAK KEDUA melalui transfer bank ke rekening:
-   - Bank : ****\*\*****\_\_\_****\*\*****
-   - No Rekening : ****\*\*****\_\_\_****\*\*****
-   - Atas Nama : ****\*\*****\_\_\_****\*\*****
+   - Bank : \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
+   - No Rekening : \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
+   - Atas Nama : \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 3. Sistem pembayaran dilakukan dalam 2 (dua) termin, yaitu:
    - **Termin I (Uang Muka / DP) sebesar 50%:** Rp 1.250.000 dibayarkan saat penandatanganan kontrak ini atau sebelum pekerjaan dimulai.
    - **Termin II (Pelunasan) sebesar 50%:** Rp 1.250.000 dibayarkan setelah seluruh pekerjaan selesai, diuji coba, dan website siap diluncurkan (_live_) di server Hostinger milik PIHAK PERTAMA.
@@ -89,7 +89,7 @@ Surat Perjanjian Kerjasama ini dibuat dan ditandatangani oleh Para Pihak dalam k
 
 <br><br>
 
-|          PIHAK PERTAMA (Klien)           |         PIHAK KEDUA (Developer)          |
-| :--------------------------------------: | :--------------------------------------: |
-|             <br><br><br><br>             |             <br><br><br><br>             |
-| **( **\*\*\*\*****\_\_****\*\***** )\*\* | **( **\*\*\*\*****\_\_****\*\***** )\*\* |
+|    PIHAK PERTAMA (Klien)     |             PIHAK KEDUA (Developer)              |
+| :--------------------------: | :----------------------------------------------: |
+|       <br><br><br><br>       |                 <br><br><br><br>                 |
+| **( Setyo Yudika Wiranto )** | **( **\*\*\*\*\***\*\_\_\*\***\*\*\*\*\*\* )\*\* |

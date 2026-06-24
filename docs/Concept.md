@@ -77,18 +77,7 @@ Tombol WhatsApp selalu terlihat (floating button).
 
 ---
 
-### 5. Form Lead
-Calon pembeli dapat mengisi:
-- Nama
-- Nomor HP
-- Email
-- Catatan
-
-Data masuk ke dashboard admin.
-
----
-
-### 6. Dashboard Admin
+### 5. Dashboard Admin
 Admin dapat:
 - Tambah properti
 - Edit properti
@@ -96,7 +85,6 @@ Admin dapat:
 - Upload foto
 - Upload video
 - Generate QR Code
-- Lihat data lead
 
 ## HALAMAN WEBSITE
 
@@ -180,18 +168,10 @@ Daftar project yang pernah dikerjakan.
 - `price`
 - `location`
 - `description`
-- `virtual_tour_url`
+- `virtual_tour_data`
 - `whatsapp_number`
 - `featured_image`
 
-### Lead
-- `id`
-- `property_id`
-- `nama`
-- `hp`
-- `email`
-- `pesan`
-- `created_at`
 
 ## INTEGRASI
 - WhatsApp

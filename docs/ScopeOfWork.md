@@ -66,7 +66,7 @@ Komponen yang wajib ada pada setiap landing page properti:
 - [ ] Deskripsi dan Spesifikasi lengkap
 - [ ] **Embed Virtual Tour 360°** (self-hosted, fullscreen, mobile-friendly)
 - [ ] Embed Google Maps (berdasarkan lokasi)
-- [ ] **Form Lead** (Nama, No. HP, Email, Catatan)
+- [ ] **Tombol Booking / Hubungi Kami** (Direct to WhatsApp)
 - [ ] **Floating Button WhatsApp** dengan format pesan otomatis
 - [ ] **Generator QR Code** otomatis (berdasarkan URL properti)
 
@@ -79,35 +79,31 @@ Komponen yang wajib ada pada setiap landing page properti:
 - Dukungan mode _fullscreen_, rotasi otomatis (_auto-rotate_), dan kontrol sentuh/giroskop (_mobile-friendly_).
 - Seluruh data & aset disimpan di server sendiri (tanpa _iframe_ pihak ketiga).
 
-#### b. QR Code Generator
+#### b. QR Code & Banner Template Generator
 
 - Setiap properti secara otomatis memiliki QR Code yang dihasilkan di sisi klien menggunakan `qrcode.react`.
-- QR Code dapat diunduh oleh Admin untuk kebutuhan cetak (brosur, banner, kartu nama).
+- QR Code dapat diunduh oleh Admin atau Owner lengkap dengan **Template Banner** promosi yang sudah siap cetak (untuk brosur, banner, kartu nama).
 
 #### c. Integrasi WhatsApp Dinamis
 
 - Floating button WhatsApp selalu tampil di setiap halaman properti.
-- Membuka WhatsApp dengan format pesan pre-fill otomatis:
+- Menggunakan **satu nomor WhatsApp utama** (yang dapat diatur oleh Admin), namun dengan format pesan pre-fill yang dinamis per properti:
   > _"Halo, saya tertarik dengan properti: [Nama Properti]"_
 
-#### d. Form Lead & Notifikasi
+### 3.4 Dashboard & CMS (Role-Based)
 
-- Form kontak tertanam di halaman properti.
-- Data tersimpan ke tabel `leads` di database MySQL melalui API Route Next.js + Prisma.
-- Data leads dapat dikelola melalui Dashboard Admin.
+Akses melalui route yang dilindungi menggunakan skema Role-Based (Admin & Owner).
 
-### 3.4 Dashboard Admin (CMS)
-
-Akses melalui route yang dilindungi: `/admin`
-
-| Modul                    | Fitur                                                                                                           |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| **Autentikasi**          | Login aman menggunakan NextAuth.js (Credential Provider).                                                       |
-| **Manajemen Properti**   | CRUD (Tambah, Edit, Hapus) data properti; upload foto (disimpan di server Hostinger, dikonversi ke WebP).       |
-| **Virtual Tour Builder** | Antarmuka visual untuk Admin membangun tur 360°.                                                                |
-| **Manajemen Leads**      | Tabel data prospek/calon pembeli dari form, lengkap dengan filter dan status.                                   |
-| **Manajemen Blog**       | Editor _rich-text_ (menggunakan `react-quill` / `tiptap`) untuk menulis, mengedit, dan mempublikasikan artikel. |
-| **Generator QR Code**    | Tampilkan dan unduh QR Code untuk setiap properti dari dalam dashboard.                                         |
+| Peran | Modul | Fitur |
+| --- | --- | --- |
+| **Admin & Owner** | **Autentikasi** | Login aman menggunakan NextAuth.js (Credential Provider) sesuai role masing-masing. |
+| **Owner** | **Statistik Properti** | Melihat analitik jumlah kunjungan (_view count_) spesifik untuk halaman properti miliknya. |
+| **Admin** | **Dynamic Pricing** | Mengatur skema harga (pricing dinamis) untuk layanan/paket pendaftaran properti. |
+| **Admin** | **Manajemen Platform** | Mengatur konfigurasi global seperti Nomor WhatsApp utama. |
+| **Admin** | **Manajemen Properti** | CRUD data properti; upload foto (disimpan di server Hostinger, dikonversi ke WebP). |
+| **Admin** | **Virtual Tour Builder** | Antarmuka visual untuk Admin membangun tur 360°. |
+| **Admin** | **Manajemen Blog** | Editor _rich-text_ untuk menulis, mengedit, dan mempublikasikan artikel. |
+| **Admin & Owner** | **Generator QR & Banner**| Tampilkan dan unduh QR Code beserta template banner untuk setiap properti. |
 
 ### 3.5 Integrasi Layanan Eksternal
 
@@ -160,12 +156,15 @@ Akses melalui route yang dilindungi: `/admin`
 
 ### Schema Database (Ringkasan)
 
-```
-User       → id, name, email, password, created_at
-Property   → id, title, slug, price, location, description,
-             virtual_tour_url, whatsapp_number, featured_image, created_at
-Lead       → id, property_id, nama, hp, email, pesan, created_at
+```text
+User       → id, name, email, password, role (ADMIN/OWNER), created_at
+Property      → id, owner_id, title, slug, price, location, property_type, listing_type, condition,
+                bedrooms, bathrooms, floors, land_area, building_area, electricity, water_supply, 
+                facing, build_year, certificate, description, view_count, virtual_tour_url, 
+                video_url, featured_image, created_at
+PropertyImage → id, property_id, image_url, created_at
 Blog       → id, title, slug, content, author, featured_image, created_at
+Setting    → id, key (contoh: wa_number, platform_pricing), value, updated_at
 ```
 
 ---
@@ -177,7 +176,7 @@ Blog       → id, title, slug, content, author, featured_image, created_at
 | **Phase 1** | Setup & Konfigurasi Awal (Next.js, Prisma, `.env`, DB lokal)               | Hari 1–3   |
 | **Phase 2** | Desain Database & Migrasi Prisma Schema                                    | Hari 3–5   |
 | **Phase 3** | Pengembangan UI/UX Frontend (Sistem Desain, Halaman Publik)                | Hari 5–14  |
-| **Phase 4** | Integrasi Backend & Fitur Utama (API Routes, Form Lead, QR Code, WhatsApp) | Hari 14–20 |
+| **Phase 4** | Integrasi Backend & Fitur Utama (API Routes, QR Code, WhatsApp) | Hari 14–20 |
 | **Phase 5** | Dashboard Admin / CMS (Auth, CRUD Properti, Virtual Tour Builder, Blog)    | Hari 20–27 |
 | **Phase 6** | Optimasi, SEO, Testing, & Deployment ke Hostinger                          | Hari 27–30 |
 
@@ -191,7 +190,7 @@ Setelah proyek selesai, PIHAK KEDUA akan menyerahkan:
 2. ✅ **Database Schema** (file migrasi Prisma).
 3. ✅ **Website Live** yang sudah ter-_deploy_ di server Hostinger PIHAK PERTAMA.
 4. ✅ **Akun Admin** Dashboard CMS yang sudah aktif dan siap digunakan.
-5. ✅ **Dokumentasi singkat** cara penggunaan Dashboard Admin (cara tambah properti, upload foto, akses leads, dll.).
+5. ✅ **Dokumentasi singkat** cara penggunaan Dashboard Admin (cara tambah properti, upload foto, dll.).
 
 ---
 

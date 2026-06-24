@@ -1,0 +1,196 @@
+import {
+  Search,
+  Home,
+  Box,
+  Briefcase,
+  TrendingUp,
+  Cpu,
+  FileText,
+  ArrowRight,
+} from "lucide-react";
+import BlogCard from "@/components/ui/blog-card";
+import { getAllBlogs } from "@/lib/blog";
+
+export default function BlogPage() {
+  const blogs = getAllBlogs();
+
+  return (
+    <main className="min-h-screen bg-slate-50 pb-20 font-sans pt-20">
+      {/* Hero Section */}
+      <section className="relative w-full h-[400px] md:h-[450px] lg:h-[500px] flex items-center overflow-hidden">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage:
+              'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=80")',
+          }}
+        >
+          {/* Overlay Gradients */}
+          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-[#0B1528]/70 to-transparent w-full md:w-3/4"></div>
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-0">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold mb-4 md:mb-6 tracking-tight">
+              <span className="text-white">Blog </span>
+              <span className="text-amber-500">Rumio</span>
+            </h1>
+
+            <p className="text-white/90 text-lg md:text-xl mb-8 md:mb-10 leading-relaxed max-w-[500px]">
+              Tips, panduan, dan inspirasi seputar properti, pemasaran, dan
+              teknologi visual.
+            </p>
+
+            {/* Search Bar */}
+            <div className="relative w-full max-w-[560px] bg-white rounded-2xl">
+              <input
+                type="text"
+                placeholder="Cari artikel, topik, atau kata kunci..."
+                className="w-full h-14 pl-6 pr-14 text-[15px] rounded-2xl border-none outline-none focus:ring-2 focus:ring-amber-500 shadow-xl text-slate-800 placeholder:text-slate-400"
+              />
+              <button className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-[#0B1528] transition-colors">
+                <Search className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Area */}
+      <section className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-0 mt-12 md:mt-16">
+        <h2 className="text-2xl md:text-[28px] font-bold text-[#0B1528] mb-8">
+          Artikel Terbaru
+        </h2>
+
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
+          {/* List Artikel */}
+          <div className="lg:w-2/3 xl:w-8/12 flex flex-col gap-8">
+            {blogs.map((blog) => (
+              <BlogCard
+                key={blog.slug}
+                image={blog.image}
+                category={blog.category}
+                date={blog.date}
+                readTime={blog.readTime}
+                title={blog.title}
+                description={blog.description}
+                link={`/blog/${blog.slug}`}
+              />
+            ))}
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:w-1/3 xl:w-4/12">
+            <div className="sticky top-28 space-y-6">
+              {/* Card Kategori */}
+              <div className="bg-white rounded-[20px] border border-slate-100 p-6 lg:p-8 shadow-sm">
+                <h3 className="text-[19px] font-bold text-[#0B1528] mb-6">
+                  Kategori
+                </h3>
+
+                <ul className="space-y-5">
+                  <li className="flex items-center justify-between group cursor-pointer">
+                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
+                      <Home className="w-[18px] h-[18px] stroke-[2]" />
+                      <span className="font-medium text-[15px]">
+                        Tips Properti
+                      </span>
+                    </div>
+                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
+                      12
+                    </span>
+                  </li>
+
+                  <li className="flex items-center justify-between group cursor-pointer">
+                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
+                      <Box className="w-[18px] h-[18px] stroke-[2]" />
+                      <span className="font-medium text-[15px]">
+                        Virtual Tour
+                      </span>
+                    </div>
+                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
+                      8
+                    </span>
+                  </li>
+
+                  <li className="flex items-center justify-between group cursor-pointer">
+                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
+                      <Briefcase className="w-[18px] h-[18px] stroke-[2]" />
+                      <span className="font-medium text-[15px]">
+                        Marketing Properti
+                      </span>
+                    </div>
+                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
+                      10
+                    </span>
+                  </li>
+
+                  <li className="flex items-center justify-between group cursor-pointer">
+                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
+                      <TrendingUp className="w-[18px] h-[18px] stroke-[2]" />
+                      <span className="font-medium text-[15px]">Investasi</span>
+                    </div>
+                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
+                      9
+                    </span>
+                  </li>
+
+                  <li className="flex items-center justify-between group cursor-pointer">
+                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
+                      <Cpu className="w-[18px] h-[18px] stroke-[2]" />
+                      <span className="font-medium text-[15px]">Teknologi</span>
+                    </div>
+                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
+                      7
+                    </span>
+                  </li>
+
+                  <li className="flex items-center justify-between group cursor-pointer">
+                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
+                      <FileText className="w-[18px] h-[18px] stroke-[2]" />
+                      <span className="font-medium text-[15px]">Panduan</span>
+                    </div>
+                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
+                      6
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Card CTA Pemasaran */}
+              <div className="relative rounded-[20px] overflow-hidden p-6 lg:p-8 shadow-md">
+                <div
+                  className="absolute inset-0 bg-cover bg-center z-0"
+                  style={{
+                    backgroundImage:
+                      'url("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80")',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-[#0B1528]/95 backdrop-blur-[2px]"></div>
+                </div>
+
+                <div className="relative z-10 flex flex-col gap-4">
+                  <h3 className="text-[20px] md:text-[22px] font-bold text-white leading-snug">
+                    Butuh Bantuan Memasarkan Properti Anda?
+                  </h3>
+                  <p className="text-white/80 text-[15px] leading-relaxed mb-1">
+                    Tim Rumio siap membantu menampilkan properti Anda secara
+                    profesional.
+                  </p>
+
+                  <button className="w-full bg-[#D98A2C] hover:bg-amber-600 text-white text-[15px] font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                    Hubungi Kami via WhatsApp
+                    <ArrowRight className="w-[18px] h-[18px]" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
