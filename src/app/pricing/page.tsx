@@ -1,6 +1,5 @@
 import HeroPricing from "@/components/Section/HeroPricing";
 import PricingSection from "@/components/Section/PricingSection";
-import ComparisonSection from "@/components/Section/ComparisonSection";
 import AddonSection from "@/components/Section/AddonSection";
 
 export default function PricingPage() {
@@ -9,7 +8,6 @@ export default function PricingPage() {
       <HeroPricing />
 
       <PricingSection />
-      <ComparisonSection />
       <AddonSection />
     </main>
   );

@@ -151,56 +151,6 @@ export const pricingPlans: PricingPlan[] = [
   },
 ];
 
-export type ComparisonFeature = {
-  name: string;
-  starter: string | boolean;
-  pro: string | boolean;
-  signature: string | boolean;
-};
-
-// Auto-generate the comparison table data from the pricingPlans above!
-export const comparisonFeatures: ComparisonFeature[] = (() => {
-  // Use Signature package (index 2) as the baseline for all possible table rows
-  const allTableLabels = pricingPlans[2].features.flatMap((f) =>
-    f.tableValues.map((tv) => tv.label),
-  );
-
-  // Reorder slightly to match the original image exactly if needed, but the signature features are already in correct order.
-  // We need to make sure "Integrasi WhatsApp" comes before "WhatsApp Virtual Assistant".
-  // Let's explicitly define the desired order based on the screenshot:
-  const order = [
-    "Foto Properti",
-    "Virtual Tour 360°",
-    "Landing Page",
-    "QR Code",
-    "QR Banner (Cetak)",
-    "Integrasi WhatsApp",
-    "WhatsApp Virtual Assistant",
-    "Statistik & Analitik",
-    "Hosting",
-    "Featured di Beranda",
-    "Support",
-  ];
-
-  return order.map((label) => {
-    // Find the value for this label in each plan, default to false if not found
-    const getVal = (planIndex: number) => {
-      for (const feature of pricingPlans[planIndex].features) {
-        const found = feature.tableValues.find((tv) => tv.label === label);
-        if (found) return found.value;
-      }
-      // Special case: Starter has "Integrasi WhatsApp" but it's not grouped with anything else.
-      return false;
-    };
-
-    return {
-      name: label,
-      starter: getVal(0),
-      pro: getVal(1),
-      signature: getVal(2),
-    };
-  });
-})();
 
 export type AddonPlan = {
   id: string;
