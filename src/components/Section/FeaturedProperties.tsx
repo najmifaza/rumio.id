@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import PropertyCard from "@/components/ui/property-card";
-import { mockProperties } from "@/data/properties";
+import { prisma } from "@/lib/prisma";
 
-export default function FeaturedProperties() {
+export default async function FeaturedProperties() {
+  const properties = await prisma.property.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 4,
+  });
+
   return (
     <section className="w-full bg-white py-24 px-6 lg:px-12 xl:px-0 font-sans">
       <div className="max-w-[1200px] mx-auto">
@@ -29,8 +34,20 @@ export default function FeaturedProperties() {
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mockProperties.map((property) => (
-            <PropertyCard key={property.id} {...property} />
+          {properties.map((property) => (
+            <PropertyCard
+              key={property.id}
+              image={property.featuredImage || "/placeholder-image.jpg"}
+              title={property.title}
+              location={property.location}
+              beds={property.bedrooms}
+              baths={property.bathrooms}
+              cars={0}
+              area={property.buildingArea}
+              priceNumeric={property.price}
+              link={`/properti/${property.slug}`}
+              badge={property.listingType}
+            />
           ))}
         </div>
       </div>

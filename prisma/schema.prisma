@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  OWNER
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  password  String
+  role      Role       @default(OWNER)
+  createdAt DateTime   @default(now())
+  
+  properties Property[]
+}
+
+model Property {
+  id               String          @id @default(cuid())
+  ownerId          String
+  owner            User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title            String
+  slug             String          @unique
+  price            Float
+  location         String
+  propertyType     String
+  listingType      String
+  condition        String
+  bedrooms         Int
+  bathrooms        Int
+  floors           Int
+  landArea         Float
+  buildingArea     Float
+  electricity      Int
+  waterSupply      String
+  facing           String
+  buildYear        Int
+  certificate      String
+  description      String          @db.Text
+  viewCount        Int             @default(0)
+  virtualTourData  Json?
+  videoUrl         String?
+  featuredImage    String?
+  highlights       Json?
+  mapsUrl          String?          @db.Text
+  createdAt        DateTime        @default(now())
+  
+  images           PropertyImage[]
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  imageUrl   String
+  caption    String?
+  createdAt  DateTime @default(now())
+}
+
+model Blog {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  content       String   @db.Text
+  author        String
+  featuredImage String?
+  viewCount     Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+model PricingPlan {
+  id          String           @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  icon        String
+  isPopular   Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  
+  features    PricingFeature[]
+}
+
+model PricingFeature {
+  id          String      @id @default(cuid())
+  planId      String
+  plan        PricingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  text        String
+  tableValues Json
+  sortOrder   Int         @default(0)
+}
+
+model AddonPlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  priceSuffix String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+}

@@ -70,9 +70,38 @@ erDiagram
         datetime created_at "Waktu Dibuat"
     }
 
+    PRICING_PLAN {
+        string id PK "Primary Key"
+        string name "Nama Paket (Starter/Pro/Signature)"
+        string description "Deskripsi Paket"
+        float price "Harga Paket"
+        string icon "Nama Icon (Lucide)"
+        boolean is_popular "Tandai sebagai Populer"
+        datetime created_at "Waktu Dibuat"
+    }
+
+    PRICING_FEATURE {
+        string id PK "Primary Key"
+        string plan_id FK "Relasi ke PRICING_PLAN"
+        string text "Nama Fitur (Utama)"
+        json table_values "Data Perbandingan (JSON array)"
+        int sort_order "Urutan Tampilan"
+    }
+
+    ADDON_PLAN {
+        string id PK "Primary Key"
+        string name "Nama Layanan Tambahan"
+        string description "Deskripsi Layanan"
+        float price "Harga Layanan"
+        string price_suffix "Tambahan Harga (opsional, spt: /bulan)"
+        string image_url "Path Gambar Layanan"
+        datetime created_at "Waktu Dibuat"
+    }
+
     %% Relasi antar tabel
     USER ||--o{ PROPERTY : "Memiliki (owns)"
     PROPERTY ||--o{ PROPERTY_IMAGE : "Mempunyai foto galeri (has)"
+    PRICING_PLAN ||--o{ PRICING_FEATURE : "Mempunyai fitur (has)"
 ```
 
 ---
@@ -161,3 +190,42 @@ Tabel _key-value_ sederhana untuk menyimpan konfigurasi global website agar dapa
 2.  **One-to-Many (`Property` -> `PropertyImage`)**
     - Satu **Property** bisa memiliki **Banyak Foto Galeri** (0 atau lebih).
     - Setiap **Foto Galeri** secara eksklusif milik tepat satu **Property**.
+3.  **One-to-Many (`PricingPlan` -> `PricingFeature`)**
+    - Satu paket harga (**Pricing Plan**) dapat memiliki **Banyak Fitur** (0 atau lebih).
+    - Setiap **Fitur** eksklusif milik satu paket harga.
+
+---
+
+### 6. Tabel `PricingPlan` (Paket Harga)
+
+Menyimpan data paket berlangganan atau layanan properti utama yang ada di file `src/data/pricing.ts`.
+
+- **`id`**: Identifier unik (slug seperti `starter`, `pro`, `signature`).
+- **`name`**: Nama paket.
+- **`description`**: Deskripsi singkat paket.
+- **`price`**: Harga paket (bisa disimpan dalam Integer/Float).
+- **`icon`**: Nama icon yang digunakan (menyimpan referensi nama lucide-react).
+- **`is_popular`**: Boolean untuk menyoroti paket favorit (populer).
+- **`created_at`**: Timestamp.
+
+### 7. Tabel `PricingFeature` (Fitur Paket)
+
+Menyimpan daftar fitur dari masing-masing paket.
+
+- **`id`**: Identifier unik.
+- **`plan_id`**: Relasi ke `PricingPlan`.
+- **`text`**: Nama fitur utama yang akan ditampilkan (Contoh: "Virtual Tour 360° (Premium)").
+- **`table_values`**: Data JSON berisi label dan value untuk perbandingan tabel.
+- **`sort_order`**: Angka urutan (Integer) untuk menentukan urutan tampilan fitur di layar.
+
+### 8. Tabel `AddonPlan` (Layanan Tambahan)
+
+Menyimpan data layanan ekstra (Addons) yang bisa dibeli pengguna (seperti Foto Drone, Video Cinematic) dari `src/data/pricing.ts`.
+
+- **`id`**: Identifier unik (slug).
+- **`name`**: Nama layanan tambahan.
+- **`description`**: Deskripsi layanan.
+- **`price`**: Harga layanan.
+- **`price_suffix`**: Teks akhiran untuk harga (Contoh: `/bulan`).
+- **`image_url`**: Path URL untuk gambar penunjang.
+- **`created_at`**: Timestamp.

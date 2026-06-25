@@ -7,8 +7,8 @@ import { Clock, Calendar, ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 // This allows Next.js to generate static pages for each blog
-export function generateStaticParams() {
-  const blogs = getAllBlogs();
+export async function generateStaticParams() {
+  const blogs = await getAllBlogs();
   return blogs.map((blog) => ({
     slug: blog.slug,
   }));
@@ -20,14 +20,14 @@ export default async function BlogDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const blog = getBlogData(slug);
+  const blog = await getBlogData(slug);
 
   if (!blog) {
     notFound();
   }
 
   // Ambil semua artikel untuk kebutuhan artikel terkait dan populer
-  const allBlogs = getAllBlogs();
+  const allBlogs = await getAllBlogs();
 
   // Artikel Terkait: kategori sama, kecualikan artikel aktif saat ini
   let relatedPosts = allBlogs.filter(

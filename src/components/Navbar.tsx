@@ -31,6 +31,11 @@ export default function Navbar() {
     };
   }, []);
 
+  // Jangan tampilkan Navbar di halaman admin
+  if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
+    return null;
+  }
+
   const navLinks = [
     { name: "Beranda", href: "/", isActive: pathname === "/" },
     {

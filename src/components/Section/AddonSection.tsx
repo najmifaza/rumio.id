@@ -1,6 +1,10 @@
-import { addonPlans } from "@/data/pricing";
+import { prisma } from "@/lib/prisma";
 
-export default function AddonSection() {
+export default async function AddonSection() {
+  const addonPlans = await prisma.addonPlan.findMany({
+    orderBy: { price: 'asc' }
+  });
+
   return (
     <section className="py-20 bg-white px-6 lg:px-12 xl:px-0">
       <div className="max-w-[1200px] mx-auto">
@@ -26,7 +30,7 @@ export default function AddonSection() {
             >
               {/* Image */}
               <div className="w-full aspect-square rounded-[18px] bg-slate-50 flex-shrink-0 flex items-center justify-center mb-6 overflow-hidden">
-                <img src={addon.image} alt={addon.name} className="w-full h-full object-cover" />
+                <img src={addon.imageUrl || undefined} alt={addon.name} className="w-full h-full object-cover" />
               </div>
 
               {/* Title & Description */}
@@ -41,7 +45,7 @@ export default function AddonSection() {
               <div className="mt-auto pt-2 w-full">
                 <span className="text-amber-600 font-bold text-sm">Rp </span>
                 <span className="text-amber-600 font-bold text-[22px] tracking-tight">
-                  {addon.price}
+                  {addon.price.toLocaleString("id-ID")}
                 </span>
                 {addon.priceSuffix && (
                   <span className="text-slate-500 text-[11px] font-medium ml-1">

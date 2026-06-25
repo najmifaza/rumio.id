@@ -1,8 +1,4 @@
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
-
-const blogsDirectory = path.join(process.cwd(), "src/data/blogs");
+import { prisma } from "./prisma";
 
 export interface BlogData {
   slug: string;
@@ -15,59 +11,43 @@ export interface BlogData {
   content: string;
 }
 
-export function getAllBlogs(): Omit<BlogData, "content">[] {
-  if (!fs.existsSync(blogsDirectory)) {
-    return [];
-  }
+export async function getAllBlogs(): Promise<Omit<BlogData, "content">[]> {
+  const blogs = await prisma.blog.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
 
-  const fileNames = fs.readdirSync(blogsDirectory);
-  const allBlogsData = fileNames
-    .filter((fileName) => fileName.endsWith(".md"))
-    .map((fileName) => {
-      // Remove ".md" from file name to get id
-      const slug = fileName.replace(/\.md$/, "");
-
-      // Read markdown file as string
-      const fullPath = path.join(blogsDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, "utf8");
-
-      // Use gray-matter to parse the post metadata section
-      const matterResult = matter(fileContents);
-
-      return {
-        slug,
-        title: matterResult.data.title,
-        category: matterResult.data.category,
-        date: matterResult.data.date,
-        readTime: matterResult.data.readTime,
-        image: matterResult.data.image,
-        description: matterResult.data.description,
-      };
-    });
-
-  return allBlogsData;
+  return blogs.map(blog => ({
+    slug: blog.slug,
+    title: blog.title,
+    category: "Tips & Panduan", // Default category
+    date: blog.createdAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+    readTime: `${Math.max(1, Math.ceil(blog.content.length / 1000))} Min Read`,
+    image: blog.featuredImage || "/placeholder-image.jpg",
+    description: blog.content.substring(0, 150).replace(/[#*`_\[\]>]/g, '').trim() + "...",
+  }));
 }
 
-export function getBlogData(slug: string): BlogData | null {
-  const fullPath = path.join(blogsDirectory, `${slug}.md`);
+export async function getBlogData(slug: string): Promise<BlogData | null> {
+  const blog = await prisma.blog.findUnique({
+    where: { slug }
+  });
 
-  if (!fs.existsSync(fullPath)) {
-    return null;
-  }
+  if (!blog) return null;
 
-  const fileContents = fs.readFileSync(fullPath, "utf8");
-
-  // Use gray-matter to parse the post metadata section
-  const matterResult = matter(fileContents);
+  // Update view count
+  await prisma.blog.update({
+    where: { id: blog.id },
+    data: { viewCount: { increment: 1 } }
+  });
 
   return {
-    slug,
-    title: matterResult.data.title,
-    category: matterResult.data.category,
-    date: matterResult.data.date,
-    readTime: matterResult.data.readTime,
-    image: matterResult.data.image,
-    description: matterResult.data.description,
-    content: matterResult.content,
+    slug: blog.slug,
+    title: blog.title,
+    category: "Tips & Panduan",
+    date: blog.createdAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+    readTime: `${Math.max(1, Math.ceil(blog.content.length / 1000))} Min Read`,
+    image: blog.featuredImage || "/placeholder-image.jpg",
+    description: blog.content.substring(0, 150).replace(/[#*`_\[\]>]/g, '').trim() + "...",
+    content: blog.content,
   };
 }

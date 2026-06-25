@@ -11,8 +11,8 @@ import HeroBlog from "@/components/Section/HeroBlog";
 import CtaHelpCard from "@/components/ui/cta-help-card";
 import { getAllBlogs } from "@/lib/blog";
 
-export default function BlogPage() {
-  const blogs = getAllBlogs();
+export default async function BlogPage() {
+  const blogs = await getAllBlogs();
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20 font-sans">

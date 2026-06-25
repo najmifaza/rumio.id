@@ -5,15 +5,17 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import Icon360 from "./Icon360";
 
 interface ImageGalleryProps {
-  gallery: string[];
+  gallery: { url: string; caption: string | null }[];
   title: string;
   badge?: string;
+  virtualTourSectionId?: string; // CC-3: ID section untuk scroll ke virtual tour
 }
 
 export default function ImageGallery({
   gallery,
   title,
   badge,
+  virtualTourSectionId,
 }: ImageGalleryProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -56,25 +58,43 @@ export default function ImageGallery({
           onClick={() => openLightbox(0)}
         >
           <img
-            src={gallery[0]}
-            alt={`${title} - Main`}
+            src={gallery[0].url}
+            alt={gallery[0].caption || `${title} - Main`}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
+          {gallery[0].caption && (
+            <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-[#0B1528]/80 to-transparent flex items-end">
+              <span className="text-white font-medium text-lg drop-shadow-md">
+                {gallery[0].caption}
+              </span>
+            </div>
+          )}
           {/* Top Left Badge */}
           <div className="absolute top-4 left-4">
             <span className="bg-[#0B1528] text-white px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider">
               FOTO UTAMA
             </span>
           </div>
-          {/* Bottom Left Button (360) */}
-          <div className="absolute bottom-4 left-4 z-10">
-            <button className="bg-white text-[#0B1528] px-6 py-4 rounded-2xl text-base font-bold shadow-lg flex items-center gap-3 hover:bg-slate-50 transition-colors">
-              <Icon360 className="w-7 h-7 text-[#0B1528]" />
-              Lihat Foto 360°
-            </button>
-          </div>
-          {/* Gradient overlay at bottom for better button contrast */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+          {/* Tombol 360° — hanya tampil jika properti memiliki Virtual Tour */}
+          {virtualTourSectionId && (
+            <div className="absolute bottom-4 left-4 z-10">
+              <button
+                onClick={() =>
+                  document
+                    .getElementById(virtualTourSectionId)
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }
+                className="bg-white text-[#0B1528] px-6 py-4 rounded-2xl text-base font-bold shadow-lg flex items-center gap-3 hover:bg-slate-50 transition-colors"
+              >
+                <Icon360 className="w-7 h-7 text-[#0B1528]" />
+                Lihat Foto 360°
+              </button>
+            </div>
+          )}
+          {/* Gradient overlay is already added conditionally, or add base gradient */}
+          {!gallery[0].caption && (
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+          )}
         </div>
 
         {/* Right Stack Images - 2 photos only */}
@@ -87,10 +107,17 @@ export default function ImageGallery({
                 onClick={() => openLightbox(1)}
               >
                 <img
-                  src={gallery[1]}
-                  alt={`${title} - 1`}
+                  src={gallery[1].url}
+                  alt={gallery[1].caption || `${title} - 1`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                {gallery[1].caption && (
+                  <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-[#0B1528]/80 to-transparent flex items-end">
+                    <span className="text-white font-medium text-sm drop-shadow-md">
+                      {gallery[1].caption}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -101,10 +128,17 @@ export default function ImageGallery({
                 onClick={() => openLightbox(2)}
               >
                 <img
-                  src={gallery[2]}
-                  alt={`${title} - 2`}
+                  src={gallery[2].url}
+                  alt={gallery[2].caption || `${title} - 2`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                {gallery[2].caption && (
+                  <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-[#0B1528]/80 to-transparent flex items-end">
+                    <span className="text-white font-medium text-sm drop-shadow-md">
+                      {gallery[2].caption}
+                    </span>
+                  </div>
+                )}
                 {gallery.length > 3 && (
                   <div className="absolute inset-0 bg-[#0B1528]/55 flex items-center justify-center transition-colors group-hover:bg-[#0B1528]/65">
                     <span className="text-white font-bold text-lg lg:text-xl text-center px-2">
@@ -157,13 +191,20 @@ export default function ImageGallery({
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={gallery[currentIndex]}
-              alt={`${title} - ${currentIndex + 1}`}
-              className="max-w-full max-h-full object-contain rounded-lg"
+              src={gallery[currentIndex].url}
+              alt={gallery[currentIndex].caption || `${title} - ${currentIndex + 1}`}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
             />
-            {/* Counter */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 bg-black/50 px-4 py-1.5 rounded-full text-sm font-medium tracking-wider">
-              {currentIndex + 1} / {gallery.length}
+            {/* Caption & Counter */}
+            <div className="absolute bottom-6 inset-x-0 flex flex-col items-center gap-2">
+              {gallery[currentIndex].caption && (
+                <div className="text-white bg-black/60 px-5 py-2 rounded-xl text-base font-medium tracking-wide">
+                  {gallery[currentIndex].caption}
+                </div>
+              )}
+              <div className="text-white/80 bg-black/50 px-4 py-1.5 rounded-full text-sm font-medium tracking-wider">
+                {currentIndex + 1} / {gallery.length}
+              </div>
             </div>
           </div>
         </div>

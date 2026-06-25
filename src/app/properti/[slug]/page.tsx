@@ -1,4 +1,4 @@
-import { mockProperties } from "@/data/properties";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import {
   Bed,
@@ -12,10 +12,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
+import ViewTracker from "@/components/ViewTracker";
 
 import ImageGallery from "@/components/ui/image-gallery";
 import Icon360 from "@/components/ui/Icon360";
-import { formatPriceFull } from "@/lib/format";
+import VirtualTourViewer, { VirtualTourData } from "@/components/ui/VirtualTourViewer";
+import { formatPriceFull, formatKPREstimate } from "@/lib/format";
 
 export default async function PropertyDetailPage({
   params,
@@ -24,24 +26,59 @@ export default async function PropertyDetailPage({
 }) {
   const { slug } = await params;
 
-  // Find the property in our mock data based on the slug
-  const property = mockProperties.find((p) => p.slug === slug);
+  // Fetch from database
+  const property = await prisma.property.findUnique({
+    where: { slug },
+    include: { images: true }
+  });
 
-  // If the property is not found, return 404 page
+
   if (!property) {
     notFound();
   }
 
-  // Auto-generate Maps URLs from coordinates
-  const mapsEmbed = property.coordinates
-    ? `https://maps.google.com/maps?q=${property.coordinates.lat},${property.coordinates.lng}&z=16&output=embed`
-    : null;
-  const mapsLink = property.coordinates
-    ? `https://maps.google.com/?q=${property.coordinates.lat},${property.coordinates.lng}`
-    : null;
+  // View count increment dipindahkan ke ViewTracker (client-side) agar tidak dikali 2 oleh React Strict Mode
+
+  let gallery = property.images.map(img => ({ url: img.imageUrl, caption: img.caption }));
+  
+  if (gallery.length > 0) {
+    const featuredIndex = gallery.findIndex(g => g.url === property.featuredImage);
+    if (featuredIndex > 0) {
+      const featured = gallery[featuredIndex];
+      gallery = [
+        featured,
+        ...gallery.filter((_, idx) => idx !== featuredIndex)
+      ];
+    }
+  } else {
+    gallery = property.featuredImage ? [{ url: property.featuredImage, caption: "" }] : [{ url: "/placeholder-image.jpg", caption: "" }];
+  }
+
+  let mapsEmbed = null;
+  let mapsLink = null;
+  
+  if (property.mapsUrl) {
+    if (property.mapsUrl.includes('embed') || property.mapsUrl.includes('iframe')) {
+      // Jika user paste kode <iframe>, ambil src-nya saja
+      const srcMatch = property.mapsUrl.match(/src=["']([^"']+)["']/);
+      mapsEmbed = srcMatch ? srcMatch[1] : property.mapsUrl;
+    } else {
+      // Jika link biasa
+      mapsLink = property.mapsUrl;
+    }
+  }
+
+  // Tentukan apakah properti memiliki virtual tour yang valid
+  const hasTour = Boolean(
+    property.virtualTourData &&
+    typeof property.virtualTourData === "object" &&
+    ((property.virtualTourData as VirtualTourData).url ||
+      (property.virtualTourData as VirtualTourData).nodes)
+  );
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20 font-sans pt-20">
+      <ViewTracker propertyId={property.id} />
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-0">
         {/* Header Section */}
         <div className="mb-8">
@@ -76,9 +113,10 @@ export default async function PropertyDetailPage({
 
         {/* Image Gallery Component */}
         <ImageGallery
-          gallery={property.gallery}
+          gallery={gallery}
           title={property.title}
-          badge={property.badge}
+          badge={property.listingType}
+          virtualTourSectionId={hasTour ? "virtual-tour" : undefined}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -95,7 +133,7 @@ export default async function PropertyDetailPage({
                     Luas Tanah
                   </p>
                   <p className="font-bold text-[#0B1528] text-base sm:text-lg whitespace-nowrap">
-                    {property.landArea || property.area} m²
+                    {property.landArea || property.buildingArea} m²
                   </p>
                 </div>
               </div>
@@ -108,7 +146,7 @@ export default async function PropertyDetailPage({
                     Luas Bangunan
                   </p>
                   <p className="font-bold text-[#0B1528] text-base sm:text-lg whitespace-nowrap">
-                    {property.area} m²
+                    {property.buildingArea} m²
                   </p>
                 </div>
               </div>
@@ -121,7 +159,7 @@ export default async function PropertyDetailPage({
                     Kamar Tidur
                   </p>
                   <p className="font-bold text-[#0B1528] text-base sm:text-lg whitespace-nowrap">
-                    {property.beds}
+                    {property.bedrooms}
                   </p>
                 </div>
               </div>
@@ -134,7 +172,7 @@ export default async function PropertyDetailPage({
                     Kamar Mandi
                   </p>
                   <p className="font-bold text-[#0B1528] text-base sm:text-lg whitespace-nowrap">
-                    {property.baths}
+                    {property.bathrooms}
                   </p>
                 </div>
               </div>
@@ -147,7 +185,7 @@ export default async function PropertyDetailPage({
                     Carport
                   </p>
                   <p className="font-bold text-[#0B1528] text-base sm:text-lg whitespace-nowrap">
-                    {property.cars} Mobil
+                    0 Mobil
                   </p>
                 </div>
               </div>
@@ -166,34 +204,44 @@ export default async function PropertyDetailPage({
               </div>
             </div>
 
-            {/* Virtual Tour Banner */}
-            <div className="bg-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8 border border-slate-100 shadow-sm">
-              <div className="space-y-4 max-w-sm">
-                <h3 className="text-2xl font-bold text-[#0B1528]">
+            {/* Virtual Tour Banner or Viewer */}
+            {hasTour ? (
+              <div id="virtual-tour" className="bg-white p-6 md:p-8 rounded-2xl border border-slate-100 shadow-sm mb-8">
+                <h3 className="text-2xl font-bold text-[#0B1528] mb-4">
                   Virtual Tour 360°
                 </h3>
-                <p className="text-slate-600 leading-relaxed text-sm md:text-base">
-                  Jelajahi setiap sudut properti ini secara virtual.
-                </p>
-                <Button className="bg-[#0B1528] hover:bg-[#16294a] text-white gap-2 h-12 px-6 rounded-xl font-semibold w-full sm:w-auto mt-2">
-                  <Icon360 className="w-7 h-7 text-white mr-2" />
-                  Mulai Tur 360°
-                </Button>
+                <div className="w-full h-[500px] rounded-xl overflow-hidden relative">
+                  <VirtualTourViewer data={property.virtualTourData as VirtualTourData} />
+                </div>
               </div>
-              <div className="w-full md:w-[50%] lg:w-[55%] aspect-[16/9] md:aspect-[2/1] bg-black rounded-xl overflow-hidden relative shadow-inner flex-shrink-0">
-                <img
-                  src={property.gallery[0]}
-                  alt="3D Floor Plan"
-                  className="w-full h-full object-cover opacity-60 scale-105"
-                />
-                {/* Fake 3D floor plan or virtual tour placeholder icon */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/60 shadow-lg cursor-pointer hover:scale-105 transition-transform">
-                    <Icon360 className="w-6 h-6 md:w-8 md:h-8 text-white" />
+            ) : (
+              <div className="bg-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8 border border-slate-100 shadow-sm">
+                <div className="space-y-4 max-w-sm">
+                  <h3 className="text-2xl font-bold text-[#0B1528]">
+                    Virtual Tour 360°
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed text-sm md:text-base">
+                    Properti ini belum memiliki Virtual Tour. Hubungi kami untuk meminta preview 360° untuk properti ini.
+                  </p>
+                  <Button className="bg-[#0B1528] hover:bg-[#16294a] text-white gap-2 h-12 px-6 rounded-xl font-semibold w-full sm:w-auto mt-2">
+                    <Icon360 className="w-7 h-7 text-white mr-2" />
+                    Request 360° Tour
+                  </Button>
+                </div>
+                <div className="w-full md:w-[50%] lg:w-[55%] aspect-video md:aspect-2/1 bg-black rounded-xl overflow-hidden relative shadow-inner shrink-0">
+                  <img
+                    src={gallery[0]?.url}
+                    alt="3D Floor Plan"
+                    className="w-full h-full object-cover opacity-60 scale-105"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/60 shadow-lg cursor-not-allowed">
+                      <Icon360 className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Description + Detail */}
             <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
@@ -205,16 +253,16 @@ export default async function PropertyDetailPage({
                   </h3>
                   <p className="text-slate-600 leading-relaxed text-sm mb-5">
                     {property.description ||
-                      `${property.title} yang berlokasi di ${property.location} menawarkan hunian nyaman dengan ${property.beds} kamar tidur, ${property.baths} kamar mandi, luas bangunan ${property.area} m² di atas lahan ${property.landArea || property.area} m².`}
+                      `${property.title} yang berlokasi di ${property.location} menawarkan hunian nyaman dengan ${property.bedrooms} kamar tidur, ${property.bathrooms} kamar mandi, luas bangunan ${property.buildingArea} m² di atas lahan ${property.landArea || property.buildingArea} m².`}
                   </p>
-                  {property.highlights && property.highlights.length > 0 && (
+                  {property.highlights && Array.isArray(property.highlights) && property.highlights.length > 0 && (
                     <ul className="space-y-2">
-                      {property.highlights.map((item, i) => (
+                      {(property.highlights as string[]).map((item, i) => (
                         <li
                           key={i}
                           className="flex items-start gap-2.5 text-sm text-slate-700"
                         >
-                          <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center">
+                          <span className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center">
                             <svg
                               className="w-3 h-3 text-amber-600"
                               fill="none"
@@ -246,7 +294,7 @@ export default async function PropertyDetailPage({
                       {[
                         {
                           label: "ID Properti",
-                          value: property.id.replace("prop-", "RUMIO-24051"),
+                          value: property.id,
                         },
                         {
                           label: "Tipe Properti",
@@ -268,12 +316,12 @@ export default async function PropertyDetailPage({
                           label: "Daya Listrik",
                           value: property.electricity || "-",
                         },
-                        { label: "Sumber Air", value: property.water || "-" },
+                        { label: "Sumber Air", value: property.waterSupply || "-" },
                         { label: "Hadap", value: property.facing || "-" },
                         {
                           label: "Tahun Bangunan",
-                          value: property.builtYear
-                            ? `${property.builtYear}`
+                          value: property.buildYear
+                            ? `${property.buildYear}`
                             : "-",
                         },
                       ].map(({ label, value }) => (
@@ -303,7 +351,7 @@ export default async function PropertyDetailPage({
                   Harga Dijual
                 </span>
                 <p className="text-3xl md:text-4xl font-extrabold text-[#0B1528] mb-8">
-                  {formatPriceFull(property.priceNumeric)}
+                  {formatPriceFull(property.price)}
                 </p>
 
                 <div className="mb-6 space-y-1">
@@ -312,7 +360,7 @@ export default async function PropertyDetailPage({
                   </span>
                   <div className="flex justify-between items-center">
                     <p className="font-bold text-[#0B1528] text-lg">
-                      {property.kpr || "Rp 5.4 Juta"}{" "}
+                      {formatKPREstimate(property.price)}{" "}
                       <span className="text-sm font-normal text-slate-500">
                         / bulan
                       </span>
@@ -338,7 +386,7 @@ export default async function PropertyDetailPage({
                   <p className="text-sm text-slate-600 mb-2 leading-relaxed">
                     Amankan properti ini dengan booking sebesar{" "}
                     <span className="font-bold text-[#0B1528]">
-                      {property.bookingPrice}
+                      {"Rp 5.000.000"}
                     </span>
                   </p>
                   <p className="text-xs text-slate-500">

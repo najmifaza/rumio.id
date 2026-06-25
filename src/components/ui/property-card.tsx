@@ -1,6 +1,5 @@
 import { Bed, Bath, Car, Maximize, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Property } from "@/data/properties";
 import Icon360 from "./Icon360";
 import { formatPriceFull } from "@/lib/format";
 

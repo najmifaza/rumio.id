@@ -1,0 +1,345 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { Viewer } from "@photo-sphere-viewer/core";
+import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
+import { VirtualTourPlugin } from "@photo-sphere-viewer/virtual-tour-plugin";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2, Crosshair } from "lucide-react";
+import { VirtualTourData, VirtualTourNode } from "@/components/ui/VirtualTourViewer";
+import "@photo-sphere-viewer/core/index.css";
+import "@photo-sphere-viewer/markers-plugin/index.css";
+import "@photo-sphere-viewer/virtual-tour-plugin/index.css";
+
+// Component helper to inject File object into DOM for FormData
+function HiddenFileInput({ name, file }: { name: string; file: File }) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (ref.current && file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      ref.current.files = dt.files;
+    }
+  }, [file]);
+  return <input type="file" name={name} ref={ref} className="hidden" />;
+}
+
+interface VirtualTourBuilderProps {
+  initialData?: VirtualTourData | null;
+}
+
+export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderProps) {
+  const [nodes, setNodes] = useState<VirtualTourNode[]>(initialData?.nodes || []);
+  const [startNodeId, setStartNodeId] = useState<string>(initialData?.startNodeId || "");
+  
+  // State files untuk upload
+  const [vtFilesMap, setVtFilesMap] = useState<Record<string, File>>({});
+
+  // Add node state
+  const [newNodeName, setNewNodeName] = useState("");
+  const [newNodeFile, setNewNodeFile] = useState<File | null>(null);
+
+  // Viewer state
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<Viewer | null>(null);
+  const pluginRef = useRef<VirtualTourPlugin | null>(null);
+
+  // Link creation state
+  const [isLinkingMode, setIsLinkingMode] = useState(false);
+  const isLinkingModeRef = useRef(isLinkingMode);
+  const [pendingLink, setPendingLink] = useState<{ pitch: number; yaw: number; sourceNodeId?: string } | null>(null);
+  const [targetNodeId, setTargetNodeId] = useState<string>("");
+
+  useEffect(() => {
+    isLinkingModeRef.current = isLinkingMode;
+  }, [isLinkingMode]);
+
+  // BUG-3 FIX: Pisah useEffect menjadi DUA:
+  // (1) Effect init+update — tidak punya cleanup, sehingga viewer TIDAK di-destroy
+  //     setiap kali nodes berubah. Viewer tetap hidup dan hanya di-update via setNodes.
+  useEffect(() => {
+    if (!containerRef.current || nodes.length === 0 || !startNodeId) return;
+
+    if (!viewerRef.current) {
+      // Inisialisasi viewer pertama kali
+      viewerRef.current = new Viewer({
+        container: containerRef.current,
+        navbar: ["autorotate", "zoom", "fullscreen"],
+        plugins: [
+          MarkersPlugin,
+          [VirtualTourPlugin, {
+            positionMode: 'manual',
+            renderMode: '3d',
+            nodes: nodes.map(n => ({
+              ...n,
+              links: n.links?.map((l) => ({
+                ...l,
+                position: l.position || (l.pitch !== undefined && l.yaw !== undefined ? { pitch: l.pitch, yaw: l.yaw } : undefined)
+              }))
+            })),
+            startNodeId: startNodeId
+          }]
+        ]
+      });
+
+      pluginRef.current = viewerRef.current.getPlugin(VirtualTourPlugin) as VirtualTourPlugin;
+
+      // Event listener didaftarkan SEKALI dan tetap valid seumur hidup komponen.
+      // isLinkingModeRef dipakai agar tidak ada stale closure.
+      viewerRef.current.addEventListener('click', ({ data }) => {
+        if (isLinkingModeRef.current) {
+          const sourceNodeId = pluginRef.current?.getCurrentNode()?.id;
+          setPendingLink({ pitch: data.pitch, yaw: data.yaw, sourceNodeId });
+        }
+      });
+    } else {
+      // Viewer sudah ada — update nodes saja tanpa recreate
+      pluginRef.current?.setNodes(
+        nodes.map(n => ({
+          ...n,
+          links: n.links?.map((l) => ({
+            ...l,
+            position: l.position || (l.pitch !== undefined && l.yaw !== undefined ? { pitch: l.pitch, yaw: l.yaw } : undefined)
+          }))
+        })),
+        startNodeId
+      );
+    }
+  }, [nodes, startNodeId]);
+
+  // (2) Effect cleanup — deps kosong [] agar HANYA berjalan saat komponen unmount.
+  //     Memastikan viewer dan semua event listener-nya dibebaskan dari memori.
+  useEffect(() => {
+    return () => {
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+        viewerRef.current = null;
+        pluginRef.current = null;
+      }
+    };
+  }, []);
+
+  // Pass JSON back to form
+  const getJsonString = () => {
+    if (nodes.length === 0) return "";
+    return JSON.stringify({ nodes, startNodeId });
+  };
+
+  const handleAddNode = () => {
+    if (!newNodeName) {
+       alert("Mohon isi nama ruangan.");
+       return;
+    }
+    
+    // Support URL input for backward compatibility or existing data, but prefer file
+    let panoramaUrl = "";
+    if (newNodeFile) {
+       panoramaUrl = URL.createObjectURL(newNodeFile);
+    } else {
+       alert("Mohon pilih file foto 360.");
+       return;
+    }
+
+    const id = "node-" + Date.now();
+    const newNode = {
+      id,
+      name: newNodeName,
+      panorama: panoramaUrl,
+      links: []
+    };
+    
+    const newNodes = [...nodes, newNode];
+    setNodes(newNodes);
+    
+    if (newNodeFile) {
+      setVtFilesMap(prev => ({ ...prev, [id]: newNodeFile }));
+    }
+
+    if (newNodes.length === 1) {
+      setStartNodeId(id);
+    }
+    setNewNodeName("");
+    setNewNodeFile(null);
+  };
+
+  const handleDeleteNode = (id: string) => {
+    // BUG-1 FIX: Revoke blob URL panorama sebelum node dihapus untuk membebaskan
+    // memori browser yang dialokasikan oleh URL.createObjectURL().
+    const nodeToDelete = nodes.find(n => n.id === id);
+    if (nodeToDelete?.panorama.startsWith('blob:')) {
+      URL.revokeObjectURL(nodeToDelete.panorama);
+    }
+
+    const newNodes = nodes.filter(n => n.id !== id).map(n => ({
+      ...n,
+      links: n.links?.filter((l) => l.nodeId !== id)
+    }));
+    setNodes(newNodes);
+    
+    setVtFilesMap(prev => {
+      const newMap = { ...prev };
+      delete newMap[id];
+      return newMap;
+    });
+
+    if (startNodeId === id) {
+      setStartNodeId(newNodes[0]?.id || "");
+    }
+    if (newNodes.length === 0) {
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+        viewerRef.current = null;
+        pluginRef.current = null;
+      }
+    }
+  };
+
+  const saveLink = () => {
+    if (!pendingLink || !targetNodeId || !pluginRef.current) return;
+    
+    const currentNodeId = pluginRef.current.getCurrentNode()?.id;
+    if (!currentNodeId) return;
+
+    const newNodes = nodes.map(n => {
+      if (n.id === currentNodeId) {
+        return {
+          ...n,
+          links: [
+            ...(n.links || []),
+            { 
+              nodeId: targetNodeId, 
+              pitch: pendingLink.pitch, 
+              yaw: pendingLink.yaw,
+              position: { pitch: pendingLink.pitch, yaw: pendingLink.yaw } // Double coverage in case of version differences
+            }
+          ]
+        };
+      }
+      return n;
+    });
+
+    setNodes(newNodes);
+    setPendingLink(null);
+    setIsLinkingMode(false);
+    setTargetNodeId("");
+  };
+
+  return (
+    <div className="space-y-6">
+      <input type="hidden" name="virtualTourDataJson" value={getJsonString()} />
+      {Object.entries(vtFilesMap).map(([id, file]) => (
+         <HiddenFileInput key={id} name={`vtFile_${id}`} file={file} />
+      ))}
+      
+      {/* Node List & Add Form */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <h4 className="font-bold text-sm mb-3">Daftar Ruangan (Nodes)</h4>
+          {nodes.length === 0 ? (
+            <p className="text-xs text-slate-500">Belum ada ruangan ditambahkan.</p>
+          ) : (
+            <div className="space-y-2">
+              {nodes.map(n => (
+                <div key={n.id} className={`flex items-center justify-between p-3 rounded-lg border ${startNodeId === n.id ? 'border-amber-500 bg-amber-50' : 'border-slate-200 bg-white'}`}>
+                  <div>
+                    <p className="text-sm font-bold">{n.name} {startNodeId === n.id && <span className="text-xs text-amber-600 ml-2">(Start)</span>}</p>
+                    <p className="text-xs text-slate-500 truncate w-48">{vtFilesMap[n.id] ? vtFilesMap[n.id].name : n.panorama.split('/').pop()}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    {startNodeId !== n.id && (
+                      <button type="button" onClick={() => setStartNodeId(n.id)} className="text-xs text-blue-600 hover:underline">Jadikan Start</button>
+                    )}
+                    <button type="button" onClick={() => handleDeleteNode(n.id)} className="text-red-500 hover:text-red-700">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <h4 className="font-bold text-sm">Tambah Ruangan Baru</h4>
+          <input
+            type="text"
+            placeholder="Nama Ruangan (ex: Ruang Tamu)"
+            value={newNodeName}
+            onChange={e => setNewNodeName(e.target.value)}
+            className="w-full h-10 px-3 border border-slate-200 rounded-lg text-sm"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={e => {
+              if (e.target.files && e.target.files[0]) {
+                setNewNodeFile(e.target.files[0]);
+              }
+            }}
+            className="w-full h-10 px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white"
+          />
+          <Button type="button" onClick={handleAddNode} className="w-full bg-slate-800 text-white hover:bg-slate-700">
+            <Plus className="w-4 h-4 mr-2" /> Tambah Ruangan
+          </Button>
+        </div>
+      </div>
+
+      {/* Viewer & Link Builder */}
+      {nodes.length > 0 && (
+        <div className="border border-slate-200 rounded-xl overflow-hidden relative">
+          <div className="p-3 bg-slate-800 text-white flex justify-between items-center">
+            <span className="text-sm font-medium">360 Preview & Builder</span>
+            <Button
+              type="button"
+              variant={isLinkingMode ? "destructive" : "secondary"}
+              size="sm"
+              onClick={() => {
+                setIsLinkingMode(!isLinkingMode);
+                setPendingLink(null);
+              }}
+              className="text-xs h-8"
+            >
+              <Crosshair className="w-3.5 h-3.5 mr-2" />
+              {isLinkingMode ? "Batal Tambah Hotspot" : "Tambah Hotspot Panah"}
+            </Button>
+          </div>
+          
+          <div className="relative">
+            <div ref={containerRef} className="w-full h-[500px] bg-slate-900" />
+            
+            {/* Linking Helper Overlay */}
+            {isLinkingMode && !pendingLink && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg pointer-events-none animate-pulse">
+                Klik dimana saja pada gambar untuk menaruh Hotspot!
+              </div>
+            )}
+
+            {/* Target Selection Modal */}
+            {pendingLink && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-xl w-80 space-y-4 shadow-xl">
+                  <h4 className="font-bold">Pilih Tujuan Hotspot</h4>
+                  <p className="text-xs text-slate-500">Saat hotspot ini diklik, pengunjung akan diarahkan ke ruangan mana?</p>
+                  <select 
+                    className="w-full h-10 border rounded-lg px-3 text-sm"
+                    value={targetNodeId}
+                    onChange={e => setTargetNodeId(e.target.value)}
+                  >
+                    <option value="">-- Pilih Ruangan --</option>
+                    {nodes.filter(n => n.id !== pendingLink.sourceNodeId).map(n => (
+                      <option key={n.id} value={n.id}>{n.name}</option>
+                    ))}
+                  </select>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" className="flex-1" onClick={() => setPendingLink(null)}>Batal</Button>
+                    <Button type="button" className="flex-1 bg-amber-600 hover:bg-amber-700" onClick={saveLink}>Simpan</Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
