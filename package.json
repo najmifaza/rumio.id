@@ -14,6 +14,14 @@
     "@photo-sphere-viewer/virtual-tour-plugin": "^5.14.2",
     "@prisma/client": "^6.19.3",
     "@tailwindcss/typography": "^0.5.20",
+    "@tiptap/extension-image": "^3.27.1",
+    "@tiptap/extension-link": "^3.27.1",
+    "@tiptap/extension-placeholder": "^3.27.1",
+    "@tiptap/extension-text-align": "^3.27.1",
+    "@tiptap/extension-underline": "^3.27.1",
+    "@tiptap/pm": "^3.27.1",
+    "@tiptap/react": "^3.27.1",
+    "@tiptap/starter-kit": "^3.27.1",
     "bcryptjs": "^3.0.3",
     "gray-matter": "^4.0.3",
     "lenis": "^1.3.23",
@@ -22,7 +30,6 @@
     "next-auth": "^4.24.14",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-markdown": "^10.1.0",
     "three": "^0.184.0"
   },
   "devDependencies": {

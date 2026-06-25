@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import {
   Bed,
   Bath,
-  Car,
   Maximize,
   MapPin,
   Share2,
@@ -176,19 +175,7 @@ export default async function PropertyDetailPage({
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 lg:px-4 xl:px-6 first:lg:pl-0 last:lg:pr-0">
-                <div className="p-2 border border-slate-200 rounded-lg">
-                  <Car className="w-6 h-6 text-slate-600 stroke-[1.5]" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 font-medium whitespace-nowrap">
-                    Carport
-                  </p>
-                  <p className="font-bold text-[#0B1528] text-base sm:text-lg whitespace-nowrap">
-                    0 Mobil
-                  </p>
-                </div>
-              </div>
+
               <div className="flex items-center gap-3 lg:px-4 xl:px-6 first:lg:pl-0 last:lg:pr-0">
                 <div className="p-2 border border-slate-200 rounded-lg">
                   <FileText className="w-6 h-6 text-slate-600 stroke-[1.5]" />

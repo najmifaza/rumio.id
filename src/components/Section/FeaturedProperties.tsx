@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 
 export default async function FeaturedProperties() {
   const properties = await prisma.property.findMany({
-    orderBy: { createdAt: 'desc' },
+    where: { status: "AVAILABLE" },
+    orderBy: { createdAt: "desc" },
     take: 4,
   });
 
@@ -46,7 +47,7 @@ export default async function FeaturedProperties() {
               area={property.buildingArea}
               priceNumeric={property.price}
               link={`/properti/${property.slug}`}
-              badge={property.listingType}
+              status={property.status}
             />
           ))}
         </div>

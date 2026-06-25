@@ -31,9 +31,10 @@ export default function ImageGallery({
 
   const closeLightbox = () => {
     setIsOpen(false);
-    // enable body scroll
+    // ISS-13 FIX: Reset ke "" agar nilai CSS asli (dari stylesheet/Lenis) berlaku kembali.
+    // Menggunakan "auto" bisa secara paksa meng-override style lain.
     if (typeof document !== "undefined") {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
     }
   };
 

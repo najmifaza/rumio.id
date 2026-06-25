@@ -8,12 +8,11 @@ export const revalidate = 60;
 export default async function PropertiesPage() {
   // Ambil data properti dari database
   const properties = await prisma.property.findMany({
+    where: { status: "AVAILABLE" },
     orderBy: {
-      createdAt: 'desc'
-    }
+      createdAt: "desc",
+    },
   });
 
-  return (
-    <PropertiesClient initialProperties={properties} />
-  );
+  return <PropertiesClient initialProperties={properties} />;
 }

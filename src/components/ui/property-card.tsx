@@ -14,8 +14,7 @@ export interface PropertyCardProps {
   priceNumeric: number;
   link: string;
   badge?: string;
-  slug?: string;
-  gallery?: string[];
+  status?: string;
 }
 
 export default function PropertyCard({
@@ -29,20 +28,32 @@ export default function PropertyCard({
   priceNumeric,
   link,
   badge = "360°",
+  status = "AVAILABLE",
 }: PropertyCardProps) {
+  const isSold = status === "SOLD";
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col font-sans">
+    <div className={`bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 flex flex-col font-sans ${isSold ? 'opacity-80 grayscale-[20%]' : 'hover:shadow-xl hover:-translate-y-1 group'}`}>
       {/* Image */}
       <div className="relative h-52 overflow-hidden shrink-0">
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className={`w-full h-full object-cover transition-transform duration-500 ${!isSold && 'group-hover:scale-105'}`}
         />
 
+        {/* Sold Overlay */}
+        {isSold && (
+          <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center z-10">
+            <span className="bg-rose-600 text-white px-4 py-2 rounded-xl font-bold tracking-widest uppercase text-sm shadow-xl rotate-[-12deg] border-2 border-white/20 backdrop-blur-sm">
+              Terjual
+            </span>
+          </div>
+        )}
+
         {/* Badge */}
-        {badge && (
-          <div className="absolute top-3 left-3">
+        {badge && !isSold && (
+          <div className="absolute top-3 left-3 z-20">
             <span className="bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-amber-600 shadow-sm flex items-center gap-1.5">
               <Icon360 className="w-3.5 h-3.5" />
               {badge}
@@ -52,7 +63,7 @@ export default function PropertyCard({
       </div>
 
       {/* Content */}
-      <div className="p-5 flex flex-col flex-1">
+      <div className="p-5 flex flex-col flex-1 relative z-20">
         <h3 className="font-bold text-lg text-[#0B1528] leading-snug mb-1 line-clamp-1">
           {title}
         </h3>
@@ -90,10 +101,10 @@ export default function PropertyCard({
 
           <Link
             href={link}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-[#0B1528] hover:text-amber-600 transition-colors group/link whitespace-nowrap"
+            className={`inline-flex items-center gap-1 text-sm font-semibold whitespace-nowrap transition-colors ${isSold ? 'text-slate-400 hover:text-slate-600' : 'text-[#0B1528] hover:text-amber-600 group/link'}`}
           >
             Lihat Detail
-            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover/link:translate-x-1" />
+            <ArrowRight className={`w-4 h-4 transition-transform duration-200 ${!isSold && 'group-hover/link:translate-x-1'}`} />
           </Link>
         </div>
       </div>

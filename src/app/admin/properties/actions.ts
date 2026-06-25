@@ -26,7 +26,12 @@ async function handleImageUpload(file: File | null) {
   const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
   
   const uploadDir = join(process.cwd(), 'public/uploads');
-  try { await mkdir(uploadDir, { recursive: true }); } catch (e) {}
+  // ISS-14 FIX: Hanya abaikan error EEXIST (folder sudah ada), lempar ulang error lain
+  try { 
+    await mkdir(uploadDir, { recursive: true }); 
+  } catch (e: unknown) {
+    if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e;
+  }
 
   const path = join(uploadDir, fileName);
   await writeFile(path, buffer);
@@ -35,9 +40,6 @@ async function handleImageUpload(file: File | null) {
 
 export async function saveProperty(formData: FormData, id?: string) {
   try {
-    const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
-    if (!admin) throw new Error("Admin not found");
-
     // Handle multiple images
     const imageCount = parseInt(formData.get("imageCount") as string) || 0;
     const finalImages: { url: string; caption: string | null }[] = [];
@@ -55,7 +57,9 @@ export async function saveProperty(formData: FormData, id?: string) {
         if (uploadedPath) finalUrl = uploadedPath;
       }
       
-      if (finalUrl && !finalUrl.startsWith("blob:")) {
+      // ISS-02 FIX: Gunakan allow-list eksplisit — hanya terima path upload lokal atau URL eksternal valid.
+      // Tolak blob URL, data URI, atau string lain yang tidak dikenal.
+      if (finalUrl && (finalUrl.startsWith("/uploads/") || finalUrl.startsWith("https://"))) {
         finalImages.push({ url: finalUrl, caption });
         if (isFeatured) {
           featuredImage = finalUrl;
@@ -74,17 +78,22 @@ export async function saveProperty(formData: FormData, id?: string) {
     const title = formData.get("title") as string;
     let slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
     
-    // Check for slug uniqueness
-    const existingProp = await prisma.property.findUnique({ where: { slug } });
-    if (existingProp && existingProp.id !== id) {
-      slug = `${slug}-${Math.floor(Math.random() * 10000)}`;
+    // ISS-03 FIX: Loop deterministik — coba slug-1, slug-2, dst. sampai ditemukan yang benar-benar unik.
+    const baseSlug = slug;
+    let counter = 1;
+    while (true) {
+      const existing = await prisma.property.findUnique({ where: { slug } });
+      // Tidak ada konflik, atau konflik dengan properti yang sedang diedit — slug aman dipakai
+      if (!existing || existing.id === id) break;
+      slug = `${baseSlug}-${counter}`;
+      counter++;
     }
     
     // Process Highlights
     const highlightsStr = formData.get("highlights") as string;
     let highlights = null;
     if (highlightsStr) {
-      try { highlights = JSON.parse(highlightsStr); } catch (e) {}
+      try { highlights = JSON.parse(highlightsStr); } catch {}
     }
 
     const virtualTourDataJson = formData.get("virtualTourDataJson") as string;
@@ -129,6 +138,7 @@ export async function saveProperty(formData: FormData, id?: string) {
       certificate: formData.get("certificate") as string,
       description: formData.get("description") as string,
       mapsUrl: formData.get("mapsUrl") as string,
+      status: (formData.get("status") as string) || "AVAILABLE",
       featuredImage,
       highlights,
       virtualTourData,
@@ -138,7 +148,9 @@ export async function saveProperty(formData: FormData, id?: string) {
       // Update existing
       await prisma.property.update({ where: { id }, data });
       
-      // PERF-1 FIX: Ganti N+1 loop dengan createMany() — 1 query untuk semua gambar
+      // ISS-01 FIX: Hapus SEMUA gambar lama sebelum insert batch baru.
+      // Tanpa ini, setiap kali admin menyimpan, gambar berlipat ganda di DB.
+      await prisma.propertyImage.deleteMany({ where: { propertyId: id } });
       await prisma.propertyImage.createMany({
         data: finalImages.map(img => ({
           propertyId: id,
@@ -147,12 +159,15 @@ export async function saveProperty(formData: FormData, id?: string) {
         })),
       });
     } else {
+      // ISS-04 FIX: Pindahkan query admin ke dalam blok create saja — tidak perlu dipanggil saat update.
+      const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+      if (!admin) throw new Error("Admin not found");
+
       // Create new
       const newProperty = await prisma.property.create({ 
         data: { ...data, ownerId: admin.id } 
       });
       
-      // PERF-1 FIX: Ganti N+1 loop dengan createMany() — 1 query untuk semua gambar
       await prisma.propertyImage.createMany({
         data: finalImages.map(img => ({
           propertyId: newProperty.id,

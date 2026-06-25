@@ -1,6 +1,5 @@
 import { getBlogData, getAllBlogs } from "@/lib/blog";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
 import CtaHelpCard from "@/components/ui/cta-help-card";
 import { Clock, Calendar, ArrowLeft, ArrowRight } from "lucide-react";
@@ -97,10 +96,11 @@ export default async function BlogDetailPage({
                 />
               </div>
 
-              {/* Markdown Content */}
-              <div className="prose prose-slate prose-lg max-w-none prose-headings:text-[#0B1528] prose-a:text-amber-600 hover:prose-a:text-amber-700 prose-img:rounded-xl prose-headings:font-bold">
-                <ReactMarkdown>{blog.content}</ReactMarkdown>
-              </div>
+              {/* HTML Content (from TipTap) */}
+              <div
+                className="prose prose-slate prose-lg max-w-none prose-headings:text-[#0B1528] prose-a:text-amber-600 hover:prose-a:text-amber-700 prose-img:rounded-xl prose-headings:font-bold"
+                dangerouslySetInnerHTML={{ __html: blog.content }}
+              />
             </article>
 
             {/* Footer actions */}

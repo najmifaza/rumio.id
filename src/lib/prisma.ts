@@ -1,9 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = global as unknown as { prisma2: PrismaClient };
+// ISS-12 FIX: Ganti nama key dari 'prisma2' ke 'prisma' agar tidak membingungkan.
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 export const prisma =
-  globalForPrisma.prisma2 ||
+  globalForPrisma.prisma ||
   new PrismaClient();
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma2 = prisma;
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

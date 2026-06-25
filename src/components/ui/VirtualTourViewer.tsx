@@ -8,6 +8,25 @@ import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import "@photo-sphere-viewer/virtual-tour-plugin/index.css";
 
+if (typeof window !== "undefined") {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const pluginProto = VirtualTourPlugin.prototype as any;
+  if (pluginProto.loadNode && !pluginProto._patchedLoadNode) {
+    const originalLoadNode = pluginProto.loadNode;
+    pluginProto.loadNode = function(...args: any[]) {
+      return originalLoadNode.apply(this, args).catch((e: any) => {
+        if (e && e.message && e.message.includes('clear')) {
+          console.warn("Caught VirtualTourPlugin loadNode unmount error.");
+        } else {
+          throw e;
+        }
+      });
+    };
+    pluginProto._patchedLoadNode = true;
+  }
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
+
 export interface VirtualTourNode {
   id: string;
   name?: string;
@@ -33,9 +52,9 @@ interface VirtualTourViewerProps {
 export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Viewer | null>(null);
-
   useEffect(() => {
     if (!containerRef.current) return;
+    if (viewerRef.current) return;
 
     const isTour = data.nodes && data.nodes.length > 0;
     const initialPanorama = isTour ? undefined : (data.url || "/placeholder-image.jpg");
@@ -52,7 +71,7 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
       localViewer = new Viewer({
         container: containerRef.current,
         panorama: initialPanorama,
-        navbar: ["autorotate", "zoom", "fullscreen"],
+        navbar: ["zoom", "fullscreen"],
         defaultYaw: 0,
         defaultPitch: 0,
         touchmoveTwoFingers: true,
@@ -76,7 +95,7 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
                           : undefined),
                     })),
                   })),
-                  startNodeId: data.startNodeId || data.nodes![0].id,
+                  startNodeId: data.startNodeId || (data.nodes && data.nodes.length > 0 ? data.nodes[0].id : undefined),
                 },
               ],
             ]
@@ -84,12 +103,7 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
       });
 
       viewerRef.current = localViewer;
-
-      if (isTour && localViewer) {
-        // Viewer already configured via options, but we can access plugin if needed
-        // localViewer.getPlugin(VirtualTourPlugin)
-      }
-    }, 50);
+    }, 100);
 
     // Cleanup on unmount
     return () => {

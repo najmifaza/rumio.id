@@ -11,6 +11,25 @@ import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import "@photo-sphere-viewer/virtual-tour-plugin/index.css";
 
+if (typeof window !== "undefined") {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const pluginProto = VirtualTourPlugin.prototype as any;
+  if (pluginProto.loadNode && !pluginProto._patchedLoadNode) {
+    const originalLoadNode = pluginProto.loadNode;
+    pluginProto.loadNode = function(...args: any[]) {
+      return originalLoadNode.apply(this, args).catch((e: any) => {
+        if (e && e.message && e.message.includes('clear')) {
+          console.warn("Caught VirtualTourPlugin loadNode unmount error.");
+        } else {
+          throw e;
+        }
+      });
+    };
+    pluginProto._patchedLoadNode = true;
+  }
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
+
 // Component helper to inject File object into DOM for FormData
 function HiddenFileInput({ name, file }: { name: string; file: File }) {
   const ref = useRef<HTMLInputElement>(null);
@@ -60,51 +79,63 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
   useEffect(() => {
     if (!containerRef.current || nodes.length === 0 || !startNodeId) return;
 
+    let timer: NodeJS.Timeout;
+
     if (!viewerRef.current) {
-      // Inisialisasi viewer pertama kali
-      viewerRef.current = new Viewer({
-        container: containerRef.current,
-        navbar: ["autorotate", "zoom", "fullscreen"],
-        plugins: [
-          MarkersPlugin,
-          [VirtualTourPlugin, {
-            positionMode: 'manual',
-            renderMode: '3d',
-            nodes: nodes.map(n => ({
-              ...n,
-              links: n.links?.map((l) => ({
-                ...l,
-                position: l.position || (l.pitch !== undefined && l.yaw !== undefined ? { pitch: l.pitch, yaw: l.yaw } : undefined)
-              }))
-            })),
-            startNodeId: startNodeId
-          }]
-        ]
-      });
+      // Defer initialization to avoid React Strict Mode race condition
+      timer = setTimeout(() => {
+        if (!containerRef.current) return;
+        
+        viewerRef.current = new Viewer({
+          container: containerRef.current,
+          navbar: ["zoom", "fullscreen"],
+          plugins: [
+            MarkersPlugin,
+            [VirtualTourPlugin, {
+              positionMode: 'manual',
+              renderMode: '3d',
+              nodes: nodes.map(n => ({
+                ...n,
+                links: n.links?.map((l) => ({
+                  ...l,
+                  position: l.position || (l.pitch !== undefined && l.yaw !== undefined ? { pitch: l.pitch, yaw: l.yaw } : undefined)
+                }))
+              })),
+              startNodeId: startNodeId
+            }]
+          ]
+        });
 
-      pluginRef.current = viewerRef.current.getPlugin(VirtualTourPlugin) as VirtualTourPlugin;
+        pluginRef.current = viewerRef.current.getPlugin(VirtualTourPlugin) as VirtualTourPlugin;
 
-      // Event listener didaftarkan SEKALI dan tetap valid seumur hidup komponen.
-      // isLinkingModeRef dipakai agar tidak ada stale closure.
-      viewerRef.current.addEventListener('click', ({ data }) => {
-        if (isLinkingModeRef.current) {
-          const sourceNodeId = pluginRef.current?.getCurrentNode()?.id;
-          setPendingLink({ pitch: data.pitch, yaw: data.yaw, sourceNodeId });
-        }
-      });
+        viewerRef.current.addEventListener('click', ({ data }) => {
+          if (isLinkingModeRef.current) {
+            const sourceNodeId = pluginRef.current?.getCurrentNode()?.id;
+            setPendingLink({ pitch: data.pitch, yaw: data.yaw, sourceNodeId });
+          }
+        });
+      }, 100);
     } else {
       // Viewer sudah ada — update nodes saja tanpa recreate
-      pluginRef.current?.setNodes(
-        nodes.map(n => ({
-          ...n,
-          links: n.links?.map((l) => ({
-            ...l,
-            position: l.position || (l.pitch !== undefined && l.yaw !== undefined ? { pitch: l.pitch, yaw: l.yaw } : undefined)
-          }))
-        })),
-        startNodeId
-      );
+      try {
+        pluginRef.current?.setNodes(
+          nodes.map(n => ({
+            ...n,
+            links: n.links?.map((l) => ({
+              ...l,
+              position: l.position || (l.pitch !== undefined && l.yaw !== undefined ? { pitch: l.pitch, yaw: l.yaw } : undefined)
+            }))
+          })),
+          startNodeId
+        );
+      } catch (e) {
+        console.error("Error setting nodes:", e);
+      }
     }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [nodes, startNodeId]);
 
   // (2) Effect cleanup — deps kosong [] agar HANYA berjalan saat komponen unmount.
@@ -240,16 +271,22 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
           ) : (
             <div className="space-y-2">
               {nodes.map(n => (
-                <div key={n.id} className={`flex items-center justify-between p-3 rounded-lg border ${startNodeId === n.id ? 'border-amber-500 bg-amber-50' : 'border-slate-200 bg-white'}`}>
-                  <div>
-                    <p className="text-sm font-bold">{n.name} {startNodeId === n.id && <span className="text-xs text-amber-600 ml-2">(Start)</span>}</p>
-                    <p className="text-xs text-slate-500 truncate w-48">{vtFilesMap[n.id] ? vtFilesMap[n.id].name : n.panorama.split('/').pop()}</p>
+                <div key={n.id} className={`flex items-center justify-between p-3 rounded-lg border gap-2 ${startNodeId === n.id ? 'border-amber-500 bg-amber-50' : 'border-slate-200 bg-white'}`}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold truncate">
+                      {n.name} {startNodeId === n.id && <span className="text-xs text-amber-600 ml-2">(Start)</span>}
+                    </p>
+                    <p className="text-xs text-slate-500 truncate">
+                      {vtFilesMap[n.id] ? vtFilesMap[n.id].name : n.panorama.split('/').pop()}
+                    </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-3 shrink-0">
                     {startNodeId !== n.id && (
-                      <button type="button" onClick={() => setStartNodeId(n.id)} className="text-xs text-blue-600 hover:underline">Jadikan Start</button>
+                      <button type="button" onClick={() => setStartNodeId(n.id)} className="text-xs font-semibold text-blue-600 hover:underline whitespace-nowrap">
+                        Jadikan Start
+                      </button>
                     )}
-                    <button type="button" onClick={() => handleDeleteNode(n.id)} className="text-red-500 hover:text-red-700">
+                    <button type="button" onClick={() => handleDeleteNode(n.id)} className="text-red-500 hover:text-red-700 shrink-0 p-1">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>

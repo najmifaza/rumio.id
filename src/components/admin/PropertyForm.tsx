@@ -17,7 +17,11 @@ import type { VirtualTourData } from "@/components/ui/VirtualTourViewer";
 
 type PropertyWithImages = Property & { images: PropertyImage[] };
 
-export default function PropertyForm({ initialData }: { initialData?: PropertyWithImages }) {
+export default function PropertyForm({
+  initialData,
+}: {
+  initialData?: PropertyWithImages;
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isEditing = !!initialData;
@@ -46,7 +50,9 @@ export default function PropertyForm({ initialData }: { initialData?: PropertyWi
     { id: string; url: string; file: File | null; caption: string }[]
   >(() => {
     if (initialData?.images && initialData.images.length > 0) {
-      return (initialData.images as { imageUrl: string; caption?: string }[]).map((img, idx) => ({
+      return (
+        initialData.images as { imageUrl: string; caption?: string }[]
+      ).map((img, idx) => ({
         id: `init-${idx}`,
         url: img.imageUrl,
         file: null,
@@ -115,9 +121,11 @@ export default function PropertyForm({ initialData }: { initialData?: PropertyWi
   };
 
   const handleCaptionChange = (index: number, val: string) => {
-    const newI = [...images];
-    newI[index].caption = val;
-    setImages(newI);
+    // ISS-06 FIX: Gunakan map() agar setiap objek dibuat baru (immutable update).
+    // [...images] hanya shallow copy — newI[index].caption = val akan mutasi objek asli di state.
+    setImages(
+      images.map((img, i) => (i === index ? { ...img, caption: val } : img)),
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -270,6 +278,31 @@ export default function PropertyForm({ initialData }: { initialData?: PropertyWi
                 >
                   <option value="Baru">Baru</option>
                   <option value="Bekas">Bekas</option>
+                </select>
+              </div>
+
+              <div className="space-y-2.5">
+                <label className="text-[13px] font-bold text-slate-700">
+                  Status Ketersediaan
+                </label>
+                <select
+                  required
+                  name="status"
+                  defaultValue={initialData?.status || "AVAILABLE"}
+                  className="w-full h-11 px-4 border border-slate-200 rounded-xl outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm bg-white font-semibold"
+                >
+                  <option
+                    value="AVAILABLE"
+                    className="text-emerald-600 font-medium"
+                  >
+                    Tersedia
+                  </option>
+                  <option value="SOLD" className="text-rose-600 font-medium">
+                    Terjual
+                  </option>
+                  <option value="RENTED" className="text-blue-600 font-medium">
+                    Disewa
+                  </option>
                 </select>
               </div>
             </div>
@@ -479,41 +512,25 @@ export default function PropertyForm({ initialData }: { initialData?: PropertyWi
 
         {/* Kolom Kanan */}
         <div className="xl:col-span-5 space-y-6">
-          {/* Lokasi Google Maps */}
-          <div className="bg-white p-6 sm:p-8 rounded-[20px] border border-slate-200 shadow-sm space-y-4">
-            <h3 className="text-lg font-bold text-[#0B1528] border-b border-slate-100 pb-3">
-              Lokasi Google Maps
-            </h3>
-            <div className="space-y-2.5">
-              <label className="text-[13px] font-bold text-slate-700">
-                URL Embed / Tautan Peta
-              </label>
-              <input
-                name="mapsUrl"
-                defaultValue={initialData?.mapsUrl ?? undefined}
-                placeholder="Contoh: https://www.google.com/maps/embed?pb=..."
-                className="w-full h-11 px-4 border border-slate-200 rounded-xl outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm placeholder:text-slate-400"
-              />
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                ⚠️ <strong>Penting:</strong> Agar peta tampil interaktif, salin
-                link <strong>Sematkan Peta (Embed)</strong> dari Google Maps
-                yang berawalan <code>&lt;iframe src=...</code>. Link biasa hanya
-                menjadi tombol Lihat Maps.
-              </p>
-            </div>
-          </div>
-
+          {" "}
           {/* Virtual Tour 360 */}
           <div className="bg-white p-6 sm:p-8 rounded-[20px] border border-slate-200 shadow-sm space-y-4">
             <h3 className="text-lg font-bold text-[#0B1528] border-b border-slate-100 pb-3">
               Virtual Tour 360° (Builder)
             </h3>
-            <VirtualTourBuilder initialData={initialData?.virtualTourData as VirtualTourData | null | undefined} />
+            <VirtualTourBuilder
+              initialData={
+                initialData?.virtualTourData as
+                  | VirtualTourData
+                  | null
+                  | undefined
+              }
+            />
             <p className="text-[11px] text-slate-500 leading-relaxed mt-2">
-              ℹ️ Anda bisa menambahkan beberapa foto ruangan 360, memilih titik awal (Start), dan menaruh panah hotspot antar ruangan.
+              ℹ️ Anda bisa menambahkan beberapa foto ruangan 360, memilih titik
+              awal (Start), dan menaruh panah hotspot antar ruangan.
             </p>
           </div>
-
           {/* Galeri Gambar */}
           <div className="bg-white p-6 sm:p-8 rounded-[20px] border border-slate-200 shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -556,7 +573,7 @@ export default function PropertyForm({ initialData }: { initialData?: PropertyWi
                     className={`rounded-xl border ${0 === idx ? "border-amber-400 bg-amber-50 shadow-sm ring-1 ring-amber-400" : "border-slate-200 bg-white"} overflow-hidden relative transition-all group cursor-move hover:shadow-md ${draggedIndex === idx ? "opacity-50" : "opacity-100"}`}
                   >
                     {/* Thumbnail */}
-                    <div className="aspect-[4/3] bg-slate-100 w-full">
+                    <div className="aspect-4/3 bg-slate-100 w-full">
                       {img.url ? (
                         <img
                           src={img.url}
@@ -600,7 +617,9 @@ export default function PropertyForm({ initialData }: { initialData?: PropertyWi
                         type="text"
                         placeholder="Contoh: Dapur, Kamar Utama..."
                         value={img.caption || ""}
-                        onChange={(e) => handleCaptionChange(idx, e.target.value)}
+                        onChange={(e) =>
+                          handleCaptionChange(idx, e.target.value)
+                        }
                         className="w-full h-8 px-2.5 text-[11px] border border-slate-200 rounded-md outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 bg-white placeholder:text-slate-400 transition-all font-medium text-slate-700"
                       />
                     </div>
@@ -609,29 +628,54 @@ export default function PropertyForm({ initialData }: { initialData?: PropertyWi
               </div>
             )}
           </div>
+          {/* Lokasi Google Maps */}
+          <div className="bg-white p-6 sm:p-8 rounded-[20px] border border-slate-200 shadow-sm space-y-4">
+            <h3 className="text-lg font-bold text-[#0B1528] border-b border-slate-100 pb-3">
+              Lokasi Google Maps
+            </h3>
+            <div className="space-y-2.5">
+              <label className="text-[13px] font-bold text-slate-700">
+                URL Embed / Tautan Peta
+              </label>
+              <input
+                name="mapsUrl"
+                defaultValue={initialData?.mapsUrl ?? undefined}
+                placeholder="Contoh: https://www.google.com/maps/embed?pb=..."
+                className="w-full h-11 px-4 border border-slate-200 rounded-xl outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm placeholder:text-slate-400"
+              />
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                ⚠️ <strong>Penting:</strong> Agar peta tampil interaktif, salin
+                link <strong>Sematkan Peta (Embed)</strong> dari Google Maps
+                yang berawalan <code>&lt;iframe src=...</code>. Link biasa hanya
+                menjadi tombol Lihat Maps.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="mt-8 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-end gap-4 sticky bottom-6 z-10 ">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/admin/properties")}
-          className="h-12 px-6 rounded-xl font-bold text-slate-600"
-        >
-          Batal
-        </Button>
-        <Button
-          type="submit"
-          disabled={loading}
-          className="bg-[#0B1528] hover:bg-[#1a2b4c] text-white h-12 px-8 rounded-xl font-bold shadow-md"
-        >
-          {loading
-            ? "Menyimpan..."
-            : isEditing
-              ? "Simpan Perubahan"
-              : "Tambah Properti"}
-        </Button>
+      <div className="mt-8 flex justify-end sticky bottom-6 z-10 pointer-events-none">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xl flex gap-4 pointer-events-auto">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/admin/properties")}
+            className="h-12 px-6 rounded-xl font-bold text-slate-600"
+          >
+            Batal
+          </Button>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="bg-[#0B1528] hover:bg-[#1a2b4c] text-white h-12 px-8 rounded-xl font-bold shadow-md"
+          >
+            {loading
+              ? "Menyimpan..."
+              : isEditing
+                ? "Simpan Perubahan"
+                : "Tambah Properti"}
+          </Button>
+        </div>
       </div>
     </form>
   );

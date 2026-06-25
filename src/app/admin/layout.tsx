@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Home, Building, FileText, Settings } from "lucide-react";
+import SidebarNav from "@/components/admin/SidebarNav";
 import LogoutButton from "@/components/admin/LogoutButton";
 
 export default async function AdminLayout({
@@ -29,36 +29,7 @@ export default async function AdminLayout({
         </div>
 
         <div className="p-4 flex-1 overflow-y-auto">
-          <nav className="space-y-1">
-            <Link
-              href="/admin"
-              className="flex items-center gap-3 px-4 py-3 bg-amber-50 text-amber-700 rounded-xl font-bold transition-all"
-            >
-              <Home className="w-5 h-5" />
-              <span>Dashboard</span>
-            </Link>
-            <Link
-              href="/admin/properties"
-              className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-[#0B1528] hover:bg-slate-50 rounded-xl font-medium transition-all"
-            >
-              <Building className="w-5 h-5" />
-              <span>Properti</span>
-            </Link>
-            <Link
-              href="/admin/blogs"
-              className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-[#0B1528] hover:bg-slate-50 rounded-xl font-medium transition-all"
-            >
-              <FileText className="w-5 h-5" />
-              <span>Blog / Artikel</span>
-            </Link>
-            <Link
-              href="/admin/settings"
-              className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-[#0B1528] hover:bg-slate-50 rounded-xl font-medium transition-all"
-            >
-              <Settings className="w-5 h-5" />
-              <span>Pengaturan</span>
-            </Link>
-          </nav>
+          <SidebarNav />
         </div>
 
         {/* Profil & Logout */}

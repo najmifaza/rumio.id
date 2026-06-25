@@ -53,7 +53,8 @@ model Property {
   videoUrl         String?
   featuredImage    String?
   highlights       Json?
-  mapsUrl          String?          @db.Text
+  mapsUrl          String?         @db.Text
+  status           String          @default("AVAILABLE")
   createdAt        DateTime        @default(now())
   
   images           PropertyImage[]
