@@ -12,6 +12,14 @@ export interface BlogData {
   author: string;
 }
 
+const stripHtml = (html: string) => {
+  if (!html) return '';
+  // Replace HTML tags with a space to avoid words sticking together
+  const text = html.replace(/<[^>]*>?/gm, ' ');
+  // Replace multiple spaces with a single space
+  return text.replace(/\s+/g, ' ').trim();
+};
+
 export async function getAllBlogs(): Promise<Omit<BlogData, "content">[]> {
   const blogs = await prisma.blog.findMany({
     orderBy: { createdAt: 'desc' }
@@ -24,7 +32,7 @@ export async function getAllBlogs(): Promise<Omit<BlogData, "content">[]> {
     date: blog.createdAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
     readTime: `${Math.max(1, Math.ceil(blog.content.length / 1000))} Min Read`,
     image: blog.featuredImage || "/placeholder-image.jpg",
-    description: blog.content.substring(0, 150).replace(/[#*`_\[\]>]/g, '').trim() + "...",
+    description: stripHtml(blog.content).substring(0, 150) + "...",
     author: blog.author,
   }));
 }
@@ -49,7 +57,7 @@ export async function getBlogData(slug: string): Promise<BlogData | null> {
     date: blog.createdAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
     readTime: `${Math.max(1, Math.ceil(blog.content.length / 1000))} Min Read`,
     image: blog.featuredImage || "/placeholder-image.jpg",
-    description: blog.content.substring(0, 150).replace(/[#*`_\[\]>]/g, '').trim() + "...",
+    description: stripHtml(blog.content).substring(0, 150) + "...",
     content: blog.content,
     author: blog.author,
   };

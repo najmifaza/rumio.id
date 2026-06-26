@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Building, FileText, Settings, ChevronDown, ChevronUp, CreditCard, Image as ImageIcon } from "lucide-react";
+import { Home, Building, FileText, Settings, ChevronDown, ChevronUp, CreditCard, Image as ImageIcon, MessageSquare } from "lucide-react";
 
-export default function SidebarNav() {
+export default function SidebarNav({ newInquiriesCount = 0 }: { newInquiriesCount?: number }) {
   const pathname = usePathname();
   const [isSettingsOpen, setIsSettingsOpen] = useState(pathname.startsWith("/admin/settings"));
 
@@ -13,6 +13,7 @@ export default function SidebarNav() {
     { name: "Dashboard", href: "/admin", icon: Home },
     { name: "Properti", href: "/admin/properties", icon: Building },
     { name: "Blog / Artikel", href: "/admin/blogs", icon: FileText },
+    { name: "Inbox Permintaan", href: "/admin/inquiries", icon: MessageSquare },
     { name: "Galeri Media", href: "/admin/media", icon: ImageIcon },
     { name: "Harga & Paket", href: "/admin/pricing", icon: CreditCard },
   ];
@@ -35,14 +36,23 @@ export default function SidebarNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+            className={`flex items-center justify-between px-4 py-3 rounded-xl font-medium transition-all ${
               isActive
                 ? "bg-amber-50 text-amber-700 font-bold"
                 : "text-slate-500 hover:text-[#0B1528] hover:bg-slate-50"
             }`}
           >
-            <item.icon className="w-5 h-5" />
-            <span>{item.name}</span>
+            <div className="flex items-center gap-3">
+              <item.icon className="w-5 h-5" />
+              <span>{item.name}</span>
+            </div>
+            
+            {/* Notification Badge */}
+            {item.name === "Inbox Permintaan" && newInquiriesCount > 0 && (
+              <div className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[11px] font-bold shadow-sm">
+                {newInquiriesCount > 99 ? "99+" : newInquiriesCount}
+              </div>
+            )}
           </Link>
         );
       })}

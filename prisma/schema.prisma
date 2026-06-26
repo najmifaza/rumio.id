@@ -24,6 +24,8 @@ model User {
   createdAt DateTime   @default(now())
   
   properties Property[]
+
+  @@map("user")
 }
 
 model Property {
@@ -62,6 +64,8 @@ model Property {
   @@index([status])
   @@index([propertyType, listingType])
   @@index([viewCount(sort: Desc)])
+
+  @@map("property")
 }
 
 model PropertyImage {
@@ -71,6 +75,8 @@ model PropertyImage {
   imageUrl   String
   caption    String?
   createdAt  DateTime @default(now())
+
+  @@map("propertyimage")
 }
 
 model Blog {
@@ -85,6 +91,8 @@ model Blog {
   createdAt     DateTime @default(now())
 
   @@index([viewCount(sort: Desc)])
+
+  @@map("blog")
 }
 
 model Setting {
@@ -92,6 +100,8 @@ model Setting {
   key       String   @unique
   value     String   @db.Text
   updatedAt DateTime @updatedAt
+
+  @@map("setting")
 }
 
 model PricingPlan {
@@ -104,6 +114,8 @@ model PricingPlan {
   createdAt   DateTime         @default(now())
   
   features    PricingFeature[]
+
+  @@map("pricingplan")
 }
 
 model PricingFeature {
@@ -113,6 +125,8 @@ model PricingFeature {
   text        String
   tableValues Json
   sortOrder   Int         @default(0)
+
+  @@map("pricingfeature")
 }
 
 model AddonPlan {
@@ -123,6 +137,8 @@ model AddonPlan {
   priceSuffix String?
   imageUrl    String?
   createdAt   DateTime @default(now())
+
+  @@map("addonplan")
 }
 
 model MediaAsset {
@@ -133,4 +149,22 @@ model MediaAsset {
   size      Int
   altText   String?
   createdAt DateTime @default(now())
+
+  @@map("mediaasset")
+}
+
+model Inquiry {
+  id              String   @id @default(cuid())
+  type            String   // "CARI_PROPERTI" | "TITIP_JUAL"
+  name            String
+  phone           String
+  transactionType String   // "Beli" | "Sewa" | "Jual"
+  propertyType    String   
+  location        String
+  budgetOrPrice   String?
+  details         String?  @db.Text
+  status          String   @default("NEW") // "NEW" | "CONTACTED" | "DONE"
+  createdAt       DateTime @default(now())
+
+  @@map("inquiry")
 }

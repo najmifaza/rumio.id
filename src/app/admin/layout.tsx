@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import SidebarNav from "@/components/admin/SidebarNav";
 import LogoutButton from "@/components/admin/LogoutButton";
+import { prisma } from "@/lib/prisma";
 
 export default async function AdminLayout({
   children,
@@ -18,6 +19,11 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
+  // Hitung jumlah inquiry baru
+  const newInquiriesCount = await prisma.inquiry.count({
+    where: { status: "NEW" },
+  });
+
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-[#0B1528]">
       {/* Sidebar Kiri */}
@@ -29,7 +35,7 @@ export default async function AdminLayout({
         </div>
 
         <div className="p-4 flex-1 overflow-y-auto">
-          <SidebarNav />
+          <SidebarNav newInquiriesCount={newInquiriesCount} />
         </div>
 
         {/* Profil & Logout */}
