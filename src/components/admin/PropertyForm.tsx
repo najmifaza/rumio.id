@@ -14,6 +14,8 @@ import {
 import VirtualTourBuilder from "./VirtualTourBuilder";
 import type { Property, PropertyImage } from "@prisma/client";
 import type { VirtualTourData } from "@/components/ui/VirtualTourViewer";
+import MediaPickerModal from "./MediaPickerModal";
+import type { MediaAssetType } from "./MediaGallery";
 
 type PropertyWithImages = Property & { images: PropertyImage[] };
 
@@ -24,6 +26,7 @@ export default function PropertyForm({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const isEditing = !!initialData;
 
   // Highlights state
@@ -182,6 +185,7 @@ export default function PropertyForm({
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="w-full">
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* Kolom Kiri */}
@@ -542,11 +546,9 @@ export default function PropertyForm({
 
             {/* Master Uploader Zone */}
             <div className="relative group">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleMultipleImages}
+              <button
+                type="button"
+                onClick={() => setIsMediaPickerOpen(true)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
               <div className="w-full py-10 px-4 border-2 border-slate-200 border-dashed rounded-xl flex flex-col items-center justify-center bg-slate-50 group-hover:bg-amber-50 group-hover:border-amber-300 transition-colors text-center">
@@ -678,5 +680,22 @@ export default function PropertyForm({
         </div>
       </div>
     </form>
+      <MediaPickerModal
+        isOpen={isMediaPickerOpen}
+        onClose={() => setIsMediaPickerOpen(false)}
+        onSelect={(assets) => {
+          if (assets.length > 0) {
+            const newImages = assets.map((asset) => ({
+              id: Math.random().toString(36).substring(7),
+              url: asset.url,
+              file: null,
+              caption: "",
+            }));
+            setImages([...images, ...newImages]);
+          }
+        }}
+        multiple={true}
+      />
+    </>
   );
 }

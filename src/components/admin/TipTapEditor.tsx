@@ -64,7 +64,7 @@ export default function TipTapEditor({ value, onChange }: TipTapEditorProps) {
   // Sync external value changes (e.g., on initial load for edit page)
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value, false);
+      editor.commands.setContent(value);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);

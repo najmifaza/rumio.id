@@ -1,17 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Building, FileText, Settings } from "lucide-react";
+import { Home, Building, FileText, Settings, ChevronDown, ChevronUp, CreditCard, Image as ImageIcon } from "lucide-react";
 
 export default function SidebarNav() {
   const pathname = usePathname();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(pathname.startsWith("/admin/settings"));
 
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: Home },
     { name: "Properti", href: "/admin/properties", icon: Building },
     { name: "Blog / Artikel", href: "/admin/blogs", icon: FileText },
-    { name: "Pengaturan", href: "/admin/settings", icon: Settings },
+    { name: "Galeri Media", href: "/admin/media", icon: ImageIcon },
+    { name: "Harga & Paket", href: "/admin/pricing", icon: CreditCard },
+  ];
+
+  const settingItems = [
+    { name: "Umum", href: "/admin/settings/general" },
+    { name: "Kontak", href: "/admin/settings/contact" },
+    { name: "Sosial Media", href: "/admin/settings/social" },
   ];
 
   return (
@@ -37,6 +46,49 @@ export default function SidebarNav() {
           </Link>
         );
       })}
+
+      {/* Settings Dropdown */}
+      <div className="pt-2">
+        <button
+          onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+          className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+            pathname.startsWith("/admin/settings")
+              ? "bg-blue-50 text-blue-600 font-bold"
+              : "text-slate-500 hover:text-[#0B1528] hover:bg-slate-50"
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <Settings className="w-5 h-5" />
+            <span>Pengaturan</span>
+          </div>
+          {isSettingsOpen ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </button>
+
+        {isSettingsOpen && (
+          <div className="mt-1 ml-4 pl-4 border-l border-slate-200 space-y-1">
+            {settingItems.map((subItem) => {
+              const isSubActive = pathname === subItem.href;
+              return (
+                <Link
+                  key={subItem.href}
+                  href={subItem.href}
+                  className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    isSubActive
+                      ? "bg-blue-50/50 text-blue-600"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
+                >
+                  {subItem.name}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </nav>
   );
 }

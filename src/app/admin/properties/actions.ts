@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
@@ -46,23 +47,15 @@ export async function saveProperty(formData: FormData, id?: string) {
     let featuredImage = "";
 
     for (let i = 0; i < imageCount; i++) {
-      const file = formData.get(`imageFile_${i}`) as File | null;
       const url = formData.get(`imageUrl_${i}`) as string;
       const caption = formData.get(`imageCaption_${i}`) as string | null;
       const isFeatured = formData.get(`isFeatured_${i}`) === 'true';
 
-      let finalUrl = url;
-      if (file && file.size > 0) {
-        const uploadedPath = await handleImageUpload(file);
-        if (uploadedPath) finalUrl = uploadedPath;
-      }
-      
-      // ISS-02 FIX: Gunakan allow-list eksplisit — hanya terima path upload lokal atau URL eksternal valid.
-      // Tolak blob URL, data URI, atau string lain yang tidak dikenal.
-      if (finalUrl && (finalUrl.startsWith("/uploads/") || finalUrl.startsWith("https://"))) {
-        finalImages.push({ url: finalUrl, caption });
+      // ISS-02 FIX: Gunakan allow-list eksplisit
+      if (url && (url.startsWith("/uploads/") || url.startsWith("https://"))) {
+        finalImages.push({ url, caption });
         if (isFeatured) {
-          featuredImage = finalUrl;
+          featuredImage = url;
         }
       }
     }
@@ -97,11 +90,16 @@ export async function saveProperty(formData: FormData, id?: string) {
     }
 
     const virtualTourDataJson = formData.get("virtualTourDataJson") as string;
-    let virtualTourData = undefined;
+    
+    type VirtualTourNode = { id: string; panorama: string; [key: string]: unknown };
+    type VirtualTourParsed = { nodes?: VirtualTourNode[]; [key: string]: unknown };
+    
+    let virtualTourData: any = Prisma.JsonNull; // Gunakan Prisma.JsonNull agar Prisma menghapusnya dari DB jika kosong
+    
     if (virtualTourDataJson) {
       try { 
-        const parsed = JSON.parse(virtualTourDataJson);
-        if (parsed && parsed.nodes) {
+        const parsed = JSON.parse(virtualTourDataJson) as VirtualTourParsed;
+        if (parsed && Array.isArray(parsed.nodes)) {
           for (const node of parsed.nodes) {
             const vtFile = formData.get(`vtFile_${node.id}`) as File | null;
             if (vtFile && vtFile.size > 0) {
@@ -112,7 +110,7 @@ export async function saveProperty(formData: FormData, id?: string) {
             }
           }
         }
-        virtualTourData = parsed;
+        virtualTourData = parsed as Prisma.InputJsonValue;
       } catch (e) {
         console.error("Gagal parse VT JSON", e);
       }

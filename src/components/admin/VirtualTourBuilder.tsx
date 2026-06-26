@@ -30,18 +30,8 @@ if (typeof window !== "undefined") {
   /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
-// Component helper to inject File object into DOM for FormData
-function HiddenFileInput({ name, file }: { name: string; file: File }) {
-  const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (ref.current && file) {
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      ref.current.files = dt.files;
-    }
-  }, [file]);
-  return <input type="file" name={name} ref={ref} className="hidden" />;
-}
+import MediaPickerModal from "./MediaPickerModal";
+import type { MediaAssetType } from "./MediaGallery";
 
 interface VirtualTourBuilderProps {
   initialData?: VirtualTourData | null;
@@ -51,12 +41,10 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
   const [nodes, setNodes] = useState<VirtualTourNode[]>(initialData?.nodes || []);
   const [startNodeId, setStartNodeId] = useState<string>(initialData?.startNodeId || "");
   
-  // State files untuk upload
-  const [vtFilesMap, setVtFilesMap] = useState<Record<string, File>>({});
-
   // Add node state
   const [newNodeName, setNewNodeName] = useState("");
-  const [newNodeFile, setNewNodeFile] = useState<File | null>(null);
+  const [newNodeUrl, setNewNodeUrl] = useState<string>("");
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
 
   // Viewer state
   const containerRef = useRef<HTMLDivElement>(null);
@@ -143,7 +131,15 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
   useEffect(() => {
     return () => {
       if (viewerRef.current) {
-        viewerRef.current.destroy();
+        try {
+          viewerRef.current.destroy();
+        } catch (e: any) {
+          if (e?.message?.includes("clear")) {
+            console.warn("Caught PhotoSphereViewer destroy clear error.");
+          } else {
+            console.error("Error destroying viewer:", e);
+          }
+        }
         viewerRef.current = null;
         pluginRef.current = null;
       }
@@ -162,11 +158,7 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
        return;
     }
     
-    // Support URL input for backward compatibility or existing data, but prefer file
-    let panoramaUrl = "";
-    if (newNodeFile) {
-       panoramaUrl = URL.createObjectURL(newNodeFile);
-    } else {
+    if (!newNodeUrl) {
        alert("Mohon pilih file foto 360.");
        return;
     }
@@ -175,27 +167,22 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
     const newNode = {
       id,
       name: newNodeName,
-      panorama: panoramaUrl,
+      panorama: newNodeUrl,
       links: []
     };
     
     const newNodes = [...nodes, newNode];
     setNodes(newNodes);
-    
-    if (newNodeFile) {
-      setVtFilesMap(prev => ({ ...prev, [id]: newNodeFile }));
-    }
 
     if (newNodes.length === 1) {
       setStartNodeId(id);
     }
     setNewNodeName("");
-    setNewNodeFile(null);
+    setNewNodeUrl("");
   };
 
   const handleDeleteNode = (id: string) => {
-    // BUG-1 FIX: Revoke blob URL panorama sebelum node dihapus untuk membebaskan
-    // memori browser yang dialokasikan oleh URL.createObjectURL().
+    // Revoke blob URL panorama sebelum node dihapus untuk membebaskan memori
     const nodeToDelete = nodes.find(n => n.id === id);
     if (nodeToDelete?.panorama.startsWith('blob:')) {
       URL.revokeObjectURL(nodeToDelete.panorama);
@@ -206,21 +193,34 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
       links: n.links?.filter((l) => l.nodeId !== id)
     }));
     setNodes(newNodes);
-    
-    setVtFilesMap(prev => {
-      const newMap = { ...prev };
-      delete newMap[id];
-      return newMap;
-    });
 
     if (startNodeId === id) {
       setStartNodeId(newNodes[0]?.id || "");
     }
     if (newNodes.length === 0) {
       if (viewerRef.current) {
-        viewerRef.current.destroy();
+        try {
+          viewerRef.current.destroy();
+        } catch (e: unknown) {
+          console.warn("Caught destroy error", e);
+        }
         viewerRef.current = null;
         pluginRef.current = null;
+      }
+    } else {
+      // Jika node yang dihapus sedang aktif, kita harus paksa viewer untuk direcreate
+      // dengan cara menghancurkannya, biarkan useEffect merecreate-nya.
+      const currentNodeId = pluginRef.current?.getCurrentNode()?.id;
+      if (currentNodeId === id) {
+        if (viewerRef.current) {
+          try {
+            viewerRef.current.destroy();
+          } catch (e) {
+            console.warn(e);
+          }
+          viewerRef.current = null;
+          pluginRef.current = null;
+        }
       }
     }
   };
@@ -258,9 +258,6 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
   return (
     <div className="space-y-6">
       <input type="hidden" name="virtualTourDataJson" value={getJsonString()} />
-      {Object.entries(vtFilesMap).map(([id, file]) => (
-         <HiddenFileInput key={id} name={`vtFile_${id}`} file={file} />
-      ))}
       
       {/* Node List & Add Form */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -277,7 +274,7 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
                       {n.name} {startNodeId === n.id && <span className="text-xs text-amber-600 ml-2">(Start)</span>}
                     </p>
                     <p className="text-xs text-slate-500 truncate">
-                      {vtFilesMap[n.id] ? vtFilesMap[n.id].name : n.panorama.split('/').pop()}
+                      {n.panorama.split('/').pop()}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
@@ -305,16 +302,18 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
             onChange={e => setNewNodeName(e.target.value)}
             className="w-full h-10 px-3 border border-slate-200 rounded-lg text-sm"
           />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={e => {
-              if (e.target.files && e.target.files[0]) {
-                setNewNodeFile(e.target.files[0]);
-              }
-            }}
-            className="w-full h-10 px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              readOnly
+              value={newNodeUrl.split('/').pop() || ""}
+              placeholder="Belum ada foto 360..."
+              className="flex-1 min-w-0 h-10 px-3 border border-slate-200 rounded-lg text-sm bg-white outline-none"
+            />
+            <Button type="button" variant="outline" onClick={() => setIsMediaPickerOpen(true)} className="h-10 px-4 shrink-0 whitespace-nowrap">
+              Pilih Foto
+            </Button>
+          </div>
           <Button type="button" onClick={handleAddNode} className="w-full bg-slate-800 text-white hover:bg-slate-700">
             <Plus className="w-4 h-4 mr-2" /> Tambah Ruangan
           </Button>
@@ -377,6 +376,17 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
           </div>
         </div>
       )}
+
+      <MediaPickerModal
+        isOpen={isMediaPickerOpen}
+        onClose={() => setIsMediaPickerOpen(false)}
+        onSelect={(assets) => {
+          if (assets.length > 0) {
+            setNewNodeUrl(assets[0].url);
+          }
+        }}
+        multiple={false}
+      />
     </div>
   );
 }

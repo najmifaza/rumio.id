@@ -173,6 +173,7 @@ async function main() {
           where: { slug },
           update: {
             title: data.title || slug,
+            category: data.category || 'Uncategorized',
             content: content,
             author: data.author || admin.name,
             featuredImage: data.image || null,
@@ -180,6 +181,7 @@ async function main() {
           create: {
             title: data.title || slug,
             slug: slug,
+            category: data.category || 'Uncategorized',
             content: content,
             author: data.author || admin.name,
             featuredImage: data.image || null,

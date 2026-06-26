@@ -9,6 +9,7 @@ export interface BlogCardProps {
   title: string;
   description: string;
   link: string;
+  author?: string;
 }
 
 export default function BlogCard({
@@ -19,6 +20,7 @@ export default function BlogCard({
   title,
   description,
   link,
+  author,
 }: BlogCardProps) {
   return (
     <div className="flex flex-col md:flex-row gap-6 lg:gap-8 bg-white rounded-2xl border border-slate-100 p-4 md:p-5 hover:shadow-xl transition-all duration-300 group relative">
@@ -48,7 +50,18 @@ export default function BlogCard({
 
       {/* Content Container */}
       <div className="flex flex-col flex-1 py-1 md:py-4 justify-center">
-        <p className="text-[13px] font-medium text-slate-500 mb-3">{date}</p>
+        <p className="text-[13px] font-medium text-slate-500 mb-3 flex items-center gap-2">
+          <span>{date}</span>
+          {author && (
+            <>
+              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+              <span>
+                Oleh{" "}
+                <span className="text-[#0B1528] font-semibold">{author}</span>
+              </span>
+            </>
+          )}
+        </p>
 
         <h3 className="text-[22px] font-bold text-[#0B1528] mb-3.5 leading-[1.3] group-hover:text-[#D98A2C] transition-colors">
           <Link href={link} className="before:absolute before:inset-0">

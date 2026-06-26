@@ -2,78 +2,66 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+
+// 🛡️ TODO: Implementasikan fungsi otorisasi di sini (contoh: requireAdmin())
 
 export async function deleteBlog(id: string) {
   try {
+    // await requireAdmin(); // 🔒 Aktifkan jika sistem Auth sudah siap
+
+    if (!id || typeof id !== "string") {
+      return { success: false, error: "ID Blog tidak valid." };
+    }
+
     await prisma.blog.delete({
       where: { id },
     });
+    
     revalidatePath("/admin/blogs");
     revalidatePath("/blog");
     return { success: true };
-  } catch (error: any) {
-    console.error("Failed to delete blog:", error);
-    return { success: false, error: "Gagal menghapus blog" };
+  } catch (error: unknown) {
+    console.error("[DELETE_BLOG_ERROR]", error);
+    return { success: false, error: "Gagal menghapus blog. Silakan coba lagi." };
   }
-}
-
-async function handleImageUpload(file: File | null) {
-  if (!file || file.size === 0) return null;
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-
-  const uploadDir = join(process.cwd(), "public/uploads/blog");
-  try {
-    await mkdir(uploadDir, { recursive: true });
-  } catch (e: unknown) {
-    if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
-  }
-
-  const path = join(uploadDir, fileName);
-  await writeFile(path, buffer);
-  return `/uploads/blog/${fileName}`;
 }
 
 export async function saveBlog(formData: FormData, id?: string) {
   try {
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-    const author = formData.get("author") as string;
+    // await requireAdmin(); // 🔒 Aktifkan jika sistem Auth sudah siap
 
-    if (!title || !content || !author) {
-      return { success: false, error: "Judul, konten, dan penulis harus diisi." };
+    const title = formData.get("title")?.toString().trim();
+    const category = formData.get("category")?.toString().trim();
+    const content = formData.get("content")?.toString().trim();
+    const author = formData.get("author")?.toString().trim();
+
+    if (!title || !category || !content || !author) {
+      return { success: false, error: "Semua kolom wajib (Judul, Kategori, Konten, Penulis) harus diisi." };
     }
 
-    let slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-
+    const customSlug = formData.get("slug")?.toString().trim();
+    let slug = customSlug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+    
     const existingSlug = await prisma.blog.findFirst({
       where: {
         slug,
         ...(id ? { id: { not: id } } : {}),
       },
+      select: { id: true }, // Optimasi performa
     });
 
     if (existingSlug) {
-      slug = `${slug}-${Math.random().toString(36).substring(2, 6)}`;
+      const randomSuffix = Math.random().toString(36).substring(2, 6);
+      slug = `${slug}-${randomSuffix}`;
     }
 
-    const file = formData.get("featuredImageFile") as File | null;
-    const existingFeaturedImage = formData.get("existingFeaturedImage") as string;
+    const featuredImageInput = formData.get("featuredImage")?.toString().trim();
+    const featuredImage = featuredImageInput || "/placeholder-image.jpg";
 
-    let featuredImage = existingFeaturedImage || "/placeholder-image.jpg";
-    if (file && file.size > 0) {
-      const uploadedPath = await handleImageUpload(file);
-      if (uploadedPath) {
-        featuredImage = uploadedPath;
-      }
-    }
-
-    const data = {
+    const payload = {
       title,
       slug,
+      category,
       content,
       author,
       featuredImage,
@@ -82,19 +70,19 @@ export async function saveBlog(formData: FormData, id?: string) {
     if (id) {
       await prisma.blog.update({
         where: { id },
-        data,
+        data: payload,
       });
     } else {
       await prisma.blog.create({
-        data,
+        data: payload,
       });
     }
 
     revalidatePath("/admin/blogs");
     revalidatePath("/blog");
     return { success: true };
-  } catch (error: any) {
-    console.error("Failed to save blog:", error);
-    return { success: false, error: error.message || "Gagal menyimpan blog" };
+  } catch (error: unknown) {
+    console.error("[SAVE_BLOG_ERROR]", error);
+    return { success: false, error: "Terjadi kesalahan internal saat menyimpan blog." };
   }
 }

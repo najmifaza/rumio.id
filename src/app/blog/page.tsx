@@ -14,6 +14,25 @@ import { getAllBlogs } from "@/lib/blog";
 export default async function BlogPage() {
   const blogs = await getAllBlogs();
 
+  const categoryCounts = blogs.reduce((acc, blog) => {
+    acc[blog.category] = (acc[blog.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const categories = Object.entries(categoryCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const getCategoryIcon = (category: string) => {
+    const lowerCat = category.toLowerCase();
+    if (lowerCat.includes("properti")) return <Home className="w-[18px] h-[18px] stroke-2" />;
+    if (lowerCat.includes("virtual")) return <Box className="w-[18px] h-[18px] stroke-2" />;
+    if (lowerCat.includes("marketing") || lowerCat.includes("bisnis")) return <Briefcase className="w-[18px] h-[18px] stroke-2" />;
+    if (lowerCat.includes("investasi") || lowerCat.includes("tren")) return <TrendingUp className="w-[18px] h-[18px] stroke-2" />;
+    if (lowerCat.includes("teknologi") || lowerCat.includes("tech")) return <Cpu className="w-[18px] h-[18px] stroke-2" />;
+    return <FileText className="w-[18px] h-[18px] stroke-2" />;
+  };
+
   return (
     <main className="min-h-screen bg-slate-50 pb-20 font-sans">
       <HeroBlog />
@@ -37,6 +56,7 @@ export default async function BlogPage() {
                 title={blog.title}
                 description={blog.description}
                 link={`/blog/${blog.slug}`}
+                author={blog.author}
               />
             ))}
           </div>
@@ -51,71 +71,19 @@ export default async function BlogPage() {
                 </h3>
 
                 <ul className="space-y-5">
-                  <li className="flex items-center justify-between group cursor-pointer">
-                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
-                      <Home className="w-[18px] h-[18px] stroke-[2]" />
-                      <span className="font-medium text-[15px]">
-                        Tips Properti
+                  {categories.map((cat, idx) => (
+                    <li key={idx} className="flex items-center justify-between group cursor-pointer">
+                      <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
+                        {getCategoryIcon(cat.name)}
+                        <span className="font-medium text-[15px]">
+                          {cat.name}
+                        </span>
+                      </div>
+                      <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
+                        {cat.count}
                       </span>
-                    </div>
-                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
-                      12
-                    </span>
-                  </li>
-
-                  <li className="flex items-center justify-between group cursor-pointer">
-                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
-                      <Box className="w-[18px] h-[18px] stroke-[2]" />
-                      <span className="font-medium text-[15px]">
-                        Virtual Tour
-                      </span>
-                    </div>
-                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
-                      8
-                    </span>
-                  </li>
-
-                  <li className="flex items-center justify-between group cursor-pointer">
-                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
-                      <Briefcase className="w-[18px] h-[18px] stroke-[2]" />
-                      <span className="font-medium text-[15px]">
-                        Marketing Properti
-                      </span>
-                    </div>
-                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
-                      10
-                    </span>
-                  </li>
-
-                  <li className="flex items-center justify-between group cursor-pointer">
-                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
-                      <TrendingUp className="w-[18px] h-[18px] stroke-[2]" />
-                      <span className="font-medium text-[15px]">Investasi</span>
-                    </div>
-                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
-                      9
-                    </span>
-                  </li>
-
-                  <li className="flex items-center justify-between group cursor-pointer">
-                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
-                      <Cpu className="w-[18px] h-[18px] stroke-[2]" />
-                      <span className="font-medium text-[15px]">Teknologi</span>
-                    </div>
-                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
-                      7
-                    </span>
-                  </li>
-
-                  <li className="flex items-center justify-between group cursor-pointer">
-                    <div className="flex items-center gap-3.5 text-slate-500 group-hover:text-[#0B1528] transition-colors">
-                      <FileText className="w-[18px] h-[18px] stroke-[2]" />
-                      <span className="font-medium text-[15px]">Panduan</span>
-                    </div>
-                    <span className="text-slate-400 text-[13px] font-medium border border-slate-200 px-2.5 py-0.5 rounded-lg group-hover:border-slate-300 group-hover:text-slate-600 transition-colors">
-                      6
-                    </span>
-                  </li>
+                    </li>
+                  ))}
                 </ul>
               </div>
 

@@ -110,7 +110,15 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
       isMounted = false;
       clearTimeout(timer);
       if (viewerRef.current) {
-        viewerRef.current.destroy();
+        try {
+          viewerRef.current.destroy();
+        } catch (e: any) {
+          if (e?.message?.includes("clear")) {
+            console.warn("Caught PhotoSphereViewer destroy clear error.");
+          } else {
+            console.error("Error destroying viewer:", e);
+          }
+        }
         viewerRef.current = null;
       }
     };

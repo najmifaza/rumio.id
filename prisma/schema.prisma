@@ -58,6 +58,10 @@ model Property {
   createdAt        DateTime        @default(now())
   
   images           PropertyImage[]
+
+  @@index([status])
+  @@index([propertyType, listingType])
+  @@index([viewCount(sort: Desc)])
 }
 
 model PropertyImage {
@@ -73,11 +77,14 @@ model Blog {
   id            String   @id @default(cuid())
   title         String
   slug          String   @unique
+  category      String
   content       String   @db.Text
   author        String
   featuredImage String?
   viewCount     Int      @default(0)
   createdAt     DateTime @default(now())
+
+  @@index([viewCount(sort: Desc)])
 }
 
 model Setting {
@@ -116,4 +123,14 @@ model AddonPlan {
   priceSuffix String?
   imageUrl    String?
   createdAt   DateTime @default(now())
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  mimeType  String
+  size      Int
+  altText   String?
+  createdAt DateTime @default(now())
 }

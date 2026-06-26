@@ -2,7 +2,7 @@ import { getBlogData, getAllBlogs } from "@/lib/blog";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
 import CtaHelpCard from "@/components/ui/cta-help-card";
-import { Clock, Calendar, ArrowLeft, ArrowRight } from "lucide-react";
+import { Clock, Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 // This allows Next.js to generate static pages for each blog
@@ -75,7 +75,11 @@ export default async function BlogDetailPage({
                   {blog.title}
                 </h1>
 
-                <div className="flex items-center gap-6 text-sm text-slate-500">
+                <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <span>Oleh <span className="font-bold text-[#0B1528]">{blog.author}</span></span>
+                  </div>
+                  <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-300"></div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span>{blog.date}</span>
@@ -88,7 +92,7 @@ export default async function BlogDetailPage({
               </header>
 
               {/* Featured Image */}
-              <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden mb-10 shadow-sm">
+              <div className="w-full aspect-video rounded-2xl overflow-hidden mb-10 shadow-sm">
                 <img
                   src={blog.image}
                   alt={blog.title}
@@ -169,7 +173,7 @@ export default async function BlogDetailPage({
                   key={post.slug}
                   className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:shadow-md transition-shadow group flex flex-col h-full cursor-pointer"
                 >
-                  <div className="w-full aspect-[16/10] rounded-xl overflow-hidden mb-4">
+                  <div className="w-full aspect-16/10 rounded-xl overflow-hidden mb-4">
                     <img
                       src={post.image}
                       alt={post.title}
