@@ -52,7 +52,7 @@ export default function Navbar() {
       isActive: pathname.startsWith("/pricing"),
     },
     { name: "Tentang Kami", href: "/#tentang-kami", isActive: false },
-    { name: "Property Scout", href: "/#property-scout", isActive: false },
+    { name: "Property Scout", href: "/property-scout", isActive: pathname.startsWith("/property-scout") },
   ];
 
   return (
