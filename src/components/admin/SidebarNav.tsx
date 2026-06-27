@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Building, FileText, Settings, ChevronDown, ChevronUp, CreditCard, Image as ImageIcon, MessageSquare } from "lucide-react";
+import { Home, Building, FileText, Settings, ChevronDown, ChevronUp, CreditCard, Image as ImageIcon, MessageSquare, LayoutTemplate } from "lucide-react";
 
 export default function SidebarNav({ newInquiriesCount = 0 }: { newInquiriesCount?: number }) {
   const pathname = usePathname();
@@ -16,6 +16,7 @@ export default function SidebarNav({ newInquiriesCount = 0 }: { newInquiriesCoun
     { name: "Inbox Permintaan", href: "/admin/inquiries", icon: MessageSquare },
     { name: "Galeri Media", href: "/admin/media", icon: ImageIcon },
     { name: "Harga & Paket", href: "/admin/pricing", icon: CreditCard },
+    { name: "Buat Banner", href: "/admin/banner-generator", icon: LayoutTemplate },
   ];
 
   const settingItems = [

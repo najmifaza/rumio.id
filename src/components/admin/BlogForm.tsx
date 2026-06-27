@@ -22,7 +22,9 @@ export default function BlogForm({ initialData }: { initialData?: Blog }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState(initialData?.content || "");
-  const [imagePreview, setImagePreview] = useState(initialData?.featuredImage || "");
+  const [imagePreview, setImagePreview] = useState(
+    initialData?.featuredImage || "",
+  );
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const isEditing = !!initialData;
   const [title, setTitle] = useState(initialData?.title || "");
@@ -33,7 +35,12 @@ export default function BlogForm({ initialData }: { initialData?: Blog }) {
     const newTitle = e.target.value;
     setTitle(newTitle);
     if (!isCustomSlug && !isEditing) {
-      setSlug(newTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, ""));
+      setSlug(
+        newTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)+/g, ""),
+      );
     }
   };
 
@@ -80,16 +87,24 @@ export default function BlogForm({ initialData }: { initialData?: Blog }) {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   aria-label="Pilih Gambar Utama"
                 />
-                <div className={`w-full relative overflow-hidden transition-all ${
-                  imagePreview 
-                    ? 'border border-slate-200 rounded-xl group-hover:border-amber-400 group-hover:ring-2 group-hover:ring-amber-400/20 shadow-sm' 
-                    : 'py-10 px-4 border-2 border-slate-200 border-dashed rounded-xl flex flex-col items-center justify-center bg-slate-50 group-hover:bg-amber-50 group-hover:border-amber-300 text-center'
-                }`}>
+                <div
+                  className={`w-full relative overflow-hidden transition-all ${
+                    imagePreview
+                      ? "border border-slate-200 rounded-xl group-hover:border-amber-400 group-hover:ring-2 group-hover:ring-amber-400/20 shadow-sm"
+                      : "py-10 px-4 border-2 border-slate-200 border-dashed rounded-xl flex flex-col items-center justify-center bg-slate-50 group-hover:bg-amber-50 group-hover:border-amber-300 text-center"
+                  }`}
+                >
                   {imagePreview ? (
                     <div className="relative w-full aspect-video bg-slate-100">
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="text-white text-sm font-bold flex items-center gap-2"><ImageIcon className="w-5 h-5" /> Ganti Gambar Utama</span>
+                        <span className="text-white text-sm font-bold flex items-center gap-2">
+                          <ImageIcon className="w-5 h-5" /> Ganti Gambar Utama
+                        </span>
                       </div>
                     </div>
                   ) : (
@@ -104,7 +119,11 @@ export default function BlogForm({ initialData }: { initialData?: Blog }) {
                     </>
                   )}
                 </div>
-                <input type="hidden" name="featuredImage" value={imagePreview} />
+                <input
+                  type="hidden"
+                  name="featuredImage"
+                  value={imagePreview}
+                />
               </div>
             </div>
 
@@ -118,7 +137,7 @@ export default function BlogForm({ initialData }: { initialData?: Blog }) {
                 value={title}
                 onChange={handleTitleChange}
                 placeholder="Masukkan judul artikel"
-                className="w-full h-11 px-4 border border-slate-200 rounded-xl outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm placeholder:text-slate-400 font-bold"
+                className="w-full h-14 sm:h-16 px-5 sm:px-6 border border-slate-200 rounded-xl outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all text-lg sm:text-4xl font-bold text-[#0B1528] placeholder:text-slate-300 placeholder:font-medium tracking-tight"
               />
             </div>
 
@@ -143,7 +162,9 @@ export default function BlogForm({ initialData }: { initialData?: Blog }) {
                 Slug (URL)
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">rumio.id/blog/</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                  rumio.id/blog/
+                </span>
                 <input
                   required
                   name="slug"
@@ -154,7 +175,8 @@ export default function BlogForm({ initialData }: { initialData?: Blog }) {
                 />
               </div>
               <p className="text-[11px] text-slate-500">
-                Otomatis diisi berdasarkan judul. Boleh diubah secara manual jika diperlukan.
+                Otomatis diisi berdasarkan judul. Boleh diubah secara manual
+                jika diperlukan.
               </p>
             </div>
 
@@ -195,25 +217,25 @@ export default function BlogForm({ initialData }: { initialData?: Blog }) {
 
       <div className="mt-8 flex justify-end sticky bottom-6 z-10">
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/admin/blogs")}
-          className="h-12 px-6 rounded-xl font-bold text-slate-600"
-        >
-          Batal
-        </Button>
-        <Button
-          type="submit"
-          disabled={loading}
-          className="bg-[#0B1528] hover:bg-[#1a2b4c] text-white h-12 px-8 rounded-xl font-bold shadow-md"
-        >
-          {loading
-            ? "Menyimpan..."
-            : isEditing
-              ? "Simpan Perubahan"
-              : "Terbitkan Artikel"}
-        </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/admin/blogs")}
+            className="h-12 px-6 rounded-xl font-bold text-slate-600"
+          >
+            Batal
+          </Button>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="bg-[#0B1528] hover:bg-[#1a2b4c] text-white h-12 px-8 rounded-xl font-bold shadow-md"
+          >
+            {loading
+              ? "Menyimpan..."
+              : isEditing
+                ? "Simpan Perubahan"
+                : "Terbitkan Artikel"}
+          </Button>
         </div>
       </div>
 

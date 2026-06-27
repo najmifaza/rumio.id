@@ -1,53 +1,52 @@
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
-import { mockProperties } from '../src/data/properties'
-import { pricingPlans, addonPlans } from '../src/data/pricing'
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import { mockProperties } from "../src/data/properties";
+import { pricingPlans, addonPlans } from "../src/data/pricing";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
   // 1. Seed Admin User
-  const hashedPassword = await bcrypt.hash('admin123', 10)
+  const hashedPassword = await bcrypt.hash("admin123", 10);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@rumio.id' },
+    where: { email: "admin@rumio.id" },
     update: {},
     create: {
-      email: 'admin@rumio.id',
-      name: 'Admin Rumio',
+      email: "admin@rumio.id",
+      name: "Admin Rumio",
       password: hashedPassword,
-      role: 'ADMIN',
+      role: "ADMIN",
     },
-  })
-  console.log('✅ Admin user ready')
+  });
+  console.log("✅ Admin user ready");
 
   // 2. Seed Pricing Plans & Features
-  console.log('Seeding Pricing Plans...')
+  console.log("Seeding Pricing Plans...");
   for (const plan of pricingPlans) {
     const createdPlan = await prisma.pricingPlan.upsert({
       where: { id: plan.id },
       update: {
         name: plan.name,
         description: plan.description,
-        price: parseFloat(plan.price.replace(/\./g, '')),
-        icon: plan.icon.displayName || plan.icon.name || 'Check',
+        price: parseFloat(plan.price.replace(/\./g, "")),
+        icon: plan.icon.displayName || plan.icon.name || "Check",
         isPopular: plan.isPopular || false,
       },
       create: {
         id: plan.id,
         name: plan.name,
         description: plan.description,
-        price: parseFloat(plan.price.replace(/\./g, '')),
-        icon: plan.icon.displayName || plan.icon.name || 'Check',
+        price: parseFloat(plan.price.replace(/\./g, "")),
+        icon: plan.icon.displayName || plan.icon.name || "Check",
         isPopular: plan.isPopular || false,
       },
-    })
-    
+    });
+
     // Seed Features
-    await prisma.pricingFeature.deleteMany({ where: { planId: createdPlan.id } })
-    
+    await prisma.pricingFeature.deleteMany({
+      where: { planId: createdPlan.id },
+    });
+
     for (const [index, feature] of plan.features.entries()) {
       await prisma.pricingFeature.create({
         data: {
@@ -56,20 +55,20 @@ async function main() {
           tableValues: feature.tableValues,
           sortOrder: index,
         },
-      })
+      });
     }
   }
-  console.log('✅ Pricing Plans seeded')
+  console.log("✅ Pricing Plans seeded");
 
   // 3. Seed Addon Plans
-  console.log('Seeding Addon Plans...')
+  console.log("Seeding Addon Plans...");
   for (const addon of addonPlans) {
     await prisma.addonPlan.upsert({
       where: { id: addon.id },
       update: {
         name: addon.name,
         description: addon.description,
-        price: parseFloat(addon.price.replace(/\./g, '')),
+        price: parseFloat(addon.price.replace(/\./g, "")),
         priceSuffix: addon.priceSuffix,
         imageUrl: addon.image,
       },
@@ -77,19 +76,21 @@ async function main() {
         id: addon.id,
         name: addon.name,
         description: addon.description,
-        price: parseFloat(addon.price.replace(/\./g, '')),
+        price: parseFloat(addon.price.replace(/\./g, "")),
         priceSuffix: addon.priceSuffix,
         imageUrl: addon.image,
       },
-    })
+    });
   }
-  console.log('✅ Addon Plans seeded')
+  console.log("✅ Addon Plans seeded");
 
   // 4. Seed Properties
-  console.log('Seeding Properties...')
+  console.log("Seeding Properties...");
   for (const prop of mockProperties) {
-    const electricityInt = prop.electricity ? parseInt(prop.electricity.replace(/\D/g, '')) || 0 : 0;
-    
+    const electricityInt = prop.electricity
+      ? parseInt(prop.electricity.replace(/\D/g, "")) || 0
+      : 0;
+
     const createdProperty = await prisma.property.upsert({
       where: { slug: prop.slug },
       update: {
@@ -112,7 +113,12 @@ async function main() {
         description: prop.description || "",
         featuredImage: prop.image,
         highlights: prop.highlights ? prop.highlights : undefined,
-        virtualTourData: prop.slug === 'apartemen-studio-furnished' ? { url: "https://photo-sphere-viewer-data.netlify.app/assets/sphere.jpg" } : undefined,
+        virtualTourData:
+          prop.slug === "apartemen-studio-furnished"
+            ? {
+                url: "https://photo-sphere-viewer-data.netlify.app/assets/sphere.jpg",
+              }
+            : undefined,
       },
       create: {
         ownerId: admin.id,
@@ -136,71 +142,52 @@ async function main() {
         description: prop.description || "",
         featuredImage: prop.image,
         highlights: prop.highlights ? prop.highlights : undefined,
-        virtualTourData: prop.slug === 'apartemen-studio-furnished' ? { url: "https://photo-sphere-viewer-data.netlify.app/assets/sphere.jpg" } : undefined,
+        virtualTourData:
+          prop.slug === "apartemen-studio-furnished"
+            ? {
+                url: "https://photo-sphere-viewer-data.netlify.app/assets/sphere.jpg",
+              }
+            : undefined,
       },
-    })
+    });
 
     // Seed Gallery
-    await prisma.propertyImage.deleteMany({ where: { propertyId: createdProperty.id } })
-    const dummyCaptions = ["Tampak Depan", "Ruang Tamu Luas", "Kamar Tidur Utama", "Dapur Minimalis", "Kamar Mandi Bersih", "Taman Belakang Hijau"];
+    await prisma.propertyImage.deleteMany({
+      where: { propertyId: createdProperty.id },
+    });
+    const dummyCaptions = [
+      "Tampak Depan",
+      "Ruang Tamu Luas",
+      "Kamar Tidur Utama",
+      "Dapur Minimalis",
+      "Kamar Mandi Bersih",
+      "Taman Belakang Hijau",
+    ];
     for (let i = 0; i < prop.gallery.length; i++) {
       const image = prop.gallery[i];
       await prisma.propertyImage.create({
         data: {
           propertyId: createdProperty.id,
           imageUrl: image,
-          caption: dummyCaptions[i % dummyCaptions.length]
+          caption: dummyCaptions[i % dummyCaptions.length],
         },
-      })
+      });
     }
   }
-  console.log('✅ Properties seeded')
+  console.log("✅ Properties seeded");
 
   // 5. Seed Blogs
-  console.log('Seeding Blogs...')
-  const blogsDirectory = path.join(process.cwd(), 'src/data/blogs')
-  if (fs.existsSync(blogsDirectory)) {
-    const fileNames = fs.readdirSync(blogsDirectory)
-    for (const fileName of fileNames) {
-      if (fileName.endsWith('.md')) {
-        const fullPath = path.join(blogsDirectory, fileName)
-        const fileContents = fs.readFileSync(fullPath, 'utf8')
-        const { data, content } = matter(fileContents)
-        
-        const slug = fileName.replace(/\.md$/, '')
-        
-        await prisma.blog.upsert({
-          where: { slug },
-          update: {
-            title: data.title || slug,
-            category: data.category || 'Uncategorized',
-            content: content,
-            author: data.author || admin.name,
-            featuredImage: data.image || null,
-          },
-          create: {
-            title: data.title || slug,
-            slug: slug,
-            category: data.category || 'Uncategorized',
-            content: content,
-            author: data.author || admin.name,
-            featuredImage: data.image || null,
-          },
-        })
-      }
-    }
-    console.log('✅ Blogs seeded')
-  } else {
-    console.log('⚠️ Blogs directory not found, skipping.')
-  }
+  console.log("Seeding Blogs...");
+  // Blog seeding from markdown is now disabled because blogs are managed dynamically via Admin Panel.
+  console.log("⚠️ Blog seeding skipped (managed via Admin Panel).");
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
