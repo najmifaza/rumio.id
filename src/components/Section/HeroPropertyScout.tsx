@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Clock,
@@ -9,6 +11,14 @@ import {
 import Breadcrumbs from "@/components/ui/breadcrumbs";
 
 export default function HeroPropertyScout() {
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const element = document.getElementById("daftar");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <section className="relative w-full overflow-hidden bg-white pt-20 min-h-[500px] lg:min-h-[650px] flex items-center">
       {/* Background Image Container (Right side) */}
@@ -92,13 +102,14 @@ export default function HeroPropertyScout() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 mt-5">
-            <Link
+            <a
               href="#daftar"
-              className="bg-amber-600 hover:bg-amber-500 text-white h-14 px-8 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 w-fit shadow-md hover:shadow-lg group"
+              onClick={handleScroll}
+              className="bg-amber-600 hover:bg-amber-500 text-white h-14 px-8 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 w-fit shadow-md hover:shadow-lg group cursor-pointer"
             >
               Daftar Sekarang
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </a>
           </div>
         </div>
       </div>
