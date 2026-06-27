@@ -100,9 +100,8 @@ export default async function BlogDetailPage({
                 />
               </div>
 
-              {/* HTML Content (from TipTap) */}
               <div
-                className="prose prose-slate prose-lg max-w-none prose-headings:text-[#0B1528] prose-a:text-amber-600 hover:prose-a:text-amber-700 prose-img:rounded-xl prose-headings:font-bold"
+                className="prose prose-slate prose-lg max-w-none prose-headings:text-[#0B1528] prose-a:text-amber-600 hover:prose-a:text-amber-700 prose-img:rounded-xl prose-headings:font-bold prose-p:my-4 prose-li:my-0 [&_ul_li_p]:my-0 [&_ol_li_p]:my-0 [&_ul]:my-4"
                 dangerouslySetInnerHTML={{ __html: blog.content }}
               />
             </article>
