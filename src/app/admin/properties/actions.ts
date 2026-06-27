@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import sharp from 'sharp';
 
 export async function deleteProperty(id: string) {
   try {
@@ -23,9 +24,16 @@ export async function deleteProperty(id: string) {
 async function handleImageUpload(file: File | null) {
   if (!file || file.size === 0) return null;
   const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+  let buffer = Buffer.from(bytes);
   
+  let originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  
+  if (file.type.startsWith('image/') && !file.type.includes('svg')) {
+    buffer = await sharp(buffer).webp({ quality: 80 }).toBuffer();
+    originalName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
+  }
+
+  const fileName = `${Date.now()}-${originalName}`;
   const uploadDir = join(process.cwd(), 'public/uploads');
   // ISS-14 FIX: Hanya abaikan error EEXIST (folder sudah ada), lempar ulang error lain
   try { 

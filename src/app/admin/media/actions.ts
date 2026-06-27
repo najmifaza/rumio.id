@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
+import sharp from "sharp";
 
 export async function uploadMedia(formData: FormData) {
   try {
@@ -13,11 +14,21 @@ export async function uploadMedia(formData: FormData) {
     }
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    let buffer = Buffer.from(bytes);
     
     // Create unique filename
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    let originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    let mimeType = file.type;
+    let size = file.size;
+
+    if (file.type.startsWith('image/') && !file.type.includes('svg')) {
+      buffer = await sharp(buffer).webp({ quality: 80 }).toBuffer();
+      originalName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
+      mimeType = 'image/webp';
+      size = buffer.length;
+    }
+    
     const fileName = `${uniqueSuffix}-${originalName}`;
     
     const uploadDir = join(process.cwd(), "public/uploads/media");
@@ -36,8 +47,8 @@ export async function uploadMedia(formData: FormData) {
       data: {
         filename: originalName,
         url,
-        mimeType: file.type,
-        size: file.size,
+        mimeType,
+        size,
       }
     });
 
