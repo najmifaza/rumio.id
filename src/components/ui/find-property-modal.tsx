@@ -79,10 +79,11 @@ export default function FindPropertyModal({
       />
 
       <div className="relative bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[90vh] sm:h-auto sm:max-h-[90vh] animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300">
-        
         {/* Header Title (White bg) */}
         <div className="flex items-center justify-between p-4 px-5 border-b border-slate-100 bg-white shrink-0">
-          <h2 className="text-[17px] font-bold text-[#0B1528]">Bantu Carikan Properti</h2>
+          <h2 className="text-[17px] font-bold text-[#0B1528]">
+            Bantu Carikan Properti
+          </h2>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
@@ -92,19 +93,6 @@ export default function FindPropertyModal({
         </div>
 
         {/* Header Banner */}
-        <div className="relative h-24 bg-[#1B365D] overflow-hidden flex-shrink-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#204273] to-[#1B365D]/40 z-10" />
-          <img
-            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop"
-            alt="Find Property Banner"
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-          />
-          <div className="relative z-20 p-4 px-5 text-white flex items-center h-full">
-            <p className="text-sm font-medium leading-relaxed max-w-[80%]">
-              Susah cari properti? Tim Rumio siap bantu cari properti idaman Anda!
-            </p>
-          </div>
-        </div>
 
         {/* Form Body */}
         {success ? (
@@ -133,7 +121,22 @@ export default function FindPropertyModal({
             </p>
           </div>
         ) : (
-          <div className="p-6 overflow-y-auto custom-scrollbar">
+          <div className="p-0 overflow-y-auto custom-scrollbar">
+            <div className="relative h-24 bg-[#D98A2C] overflow-hidden flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#D98A2C] to-[#D98A2C]/40 z-10" />
+              <img
+                src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop"
+                alt="Find Property Banner"
+                className="absolute inset-0 w-full h-full object-cover opacity-30"
+              />
+              <div className="relative z-20 p-4 px-5 text-white flex items-center h-full">
+                <p className="text-sm font-medium leading-relaxed max-w-[80%]">
+                  Susah cari properti? Tim Rumio siap bantu cari properti idaman
+                  Anda!
+                </p>
+              </div>
+            </div>
+            <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Transaction Type */}
               <div>
@@ -297,6 +300,7 @@ export default function FindPropertyModal({
               </button>
             </form>
           </div>
+        </div>
         )}
       </div>
     </div>

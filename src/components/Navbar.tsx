@@ -74,12 +74,14 @@ export default function Navbar() {
           }}
         >
           {/* LOGO */}
-          <Link href="/" className="flex items-center">
-            <img src="/logo.svg" alt="Rumio" className="h-10 w-auto" />
-          </Link>
+          <div className="flex-1 flex justify-start">
+            <Link href="/" className="flex items-center">
+              <img src="/logo.svg" alt="Rumio" className="h-10 w-auto" />
+            </Link>
+          </div>
 
           {/* DESKTOP NAVIGATION */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+          <nav className="hidden md:flex flex-shrink-0 items-center gap-4 lg:gap-8 text-sm font-semibold text-slate-600">
             {navLinks.map((link, index) => (
               <Link
                 key={index}
@@ -94,7 +96,7 @@ export default function Navbar() {
           </nav>
 
           {/* DESKTOP BUTTONS */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex flex-1 justify-end items-center gap-3">
             <Button
               variant="outline"
               onClick={() => setIsModalOpen(true)}
@@ -114,29 +116,31 @@ export default function Navbar() {
           </div>
 
           {/* MOBILE HAMBURGER BUTTON */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden flex flex-col justify-center items-center gap-[6px] rounded-full shadow-md border-slate-100/50 z-50 hover:bg-slate-50 bg-white"
-            aria-label="Toggle Menu"
-          >
-            <span
-              className={`block w-6 h-[2px] bg-[#0B1528] rounded-full transition-all duration-300 ease-in-out ${
-                isOpen ? "rotate-45 translate-y-[8px]" : ""
-              }`}
-            />
-            <span
-              className={`block w-6 h-[2px] bg-[#0B1528] rounded-full transition-all duration-300 ease-in-out ${
-                isOpen ? "opacity-0 translate-x-3" : "opacity-100"
-              }`}
-            />
-            <span
-              className={`block w-6 h-[2px] bg-[#0B1528] rounded-full transition-all duration-300 ease-in-out ${
-                isOpen ? "-rotate-45 -translate-y-[8px]" : ""
-              }`}
-            />
-          </Button>
+          <div className="flex-1 flex justify-end md:hidden">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex flex-col justify-center items-center gap-[6px] rounded-full shadow-md border-slate-100/50 z-50 hover:bg-slate-50 bg-white"
+              aria-label="Toggle Menu"
+            >
+              <span
+                className={`block w-6 h-[2px] bg-[#0B1528] rounded-full transition-all duration-300 ease-in-out ${
+                  isOpen ? "rotate-45 translate-y-[8px]" : ""
+                }`}
+              />
+              <span
+                className={`block w-6 h-[2px] bg-[#0B1528] rounded-full transition-all duration-300 ease-in-out ${
+                  isOpen ? "opacity-0 translate-x-3" : "opacity-100"
+                }`}
+              />
+              <span
+                className={`block w-6 h-[2px] bg-[#0B1528] rounded-full transition-all duration-300 ease-in-out ${
+                  isOpen ? "-rotate-45 -translate-y-[8px]" : ""
+                }`}
+              />
+            </Button>
+          </div>
         </div>
 
         {/* MOBILE MENU DROPDOWN */}
