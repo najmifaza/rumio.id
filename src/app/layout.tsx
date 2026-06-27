@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
 
 const geistSans = Geist({
@@ -31,8 +32,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col relative font-sans text-slate-900 bg-white">
         <SmoothScroll>
-          <Navbar />
-          {children}
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
         </SmoothScroll>
       </body>
     </html>
