@@ -24,6 +24,11 @@ export default async function AdminLayout({
     where: { status: "NEW" },
   });
 
+  // Hitung jumlah pendaftar scout baru
+  const newScoutsCount = await prisma.propertyScout.count({
+    where: { status: "NEW" },
+  });
+
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-[#0B1528]">
       {/* Sidebar Kiri */}
@@ -35,7 +40,10 @@ export default async function AdminLayout({
         </div>
 
         <div className="p-4 flex-1 overflow-y-auto">
-          <SidebarNav newInquiriesCount={newInquiriesCount} />
+          <SidebarNav 
+            newInquiriesCount={newInquiriesCount} 
+            newScoutsCount={newScoutsCount} 
+          />
         </div>
 
         {/* Profil & Logout */}
