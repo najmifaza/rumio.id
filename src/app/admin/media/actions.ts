@@ -23,7 +23,7 @@ export async function uploadMedia(formData: FormData) {
     let size = file.size;
 
     if (file.type.startsWith('image/') && !file.type.includes('svg')) {
-      buffer = await sharp(buffer).webp({ quality: 80 }).toBuffer();
+      buffer = (await sharp(buffer).webp({ quality: 80 }).toBuffer()) as any;
       originalName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
       mimeType = 'image/webp';
       size = buffer.length;

@@ -30,7 +30,7 @@ export async function submitPackageOrder(formData: FormData) {
     
     // Optimize image if it's an image
     if (file.type.startsWith('image/') && !file.type.includes('svg')) {
-      buffer = (await sharp(buffer).webp({ quality: 80 }).toBuffer()) as Buffer;
+      buffer = (await sharp(buffer).webp({ quality: 80 }).toBuffer()) as any;
       originalName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
     }
 
