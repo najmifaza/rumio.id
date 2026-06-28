@@ -27,7 +27,7 @@ export default function HeroPropertyScout() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
           style={{
             backgroundImage:
-              'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop")',
+              'url("/Section-HeroPropertyScout.webp")',
           }}
         />
         {/* Gradient mask to blend with the white background on the left */}

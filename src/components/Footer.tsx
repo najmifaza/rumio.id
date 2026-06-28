@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { MapPin, Phone, Mail, ArrowRight } from "lucide-react";
 
@@ -19,7 +18,7 @@ export default function Footer() {
           {/* Brand Info */}
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo-footer.svg" alt="Rumio.id Logo" width={150} height={45} className="object-contain" />
+              <img src="/logo-footer.svg" alt="Rumio.id Logo" width={150} height={45} className="object-contain h-auto" />
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed">
               Rumio.id adalah platform properti terpercaya yang membantu Anda menemukan rumah, apartemen, atau tanah idaman dengan proses yang mudah, aman, dan transparan.

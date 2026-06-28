@@ -1,5 +1,12 @@
 import { prisma } from "@/lib/prisma";
-import { MessageSquare, Calendar, User, Phone, MapPin, Tag } from "lucide-react";
+import {
+  MessageSquare,
+  Calendar,
+  User,
+  Phone,
+  MapPin,
+  Tag,
+} from "lucide-react";
 import { InquiryStatusSelect, DeleteInquiryButton } from "./inquiries-client";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +26,8 @@ export default async function InquiriesPage() {
             Inbox Permintaan
           </h1>
           <p className="text-slate-500 mt-1">
-            Kelola permintaan properti masuk dari pelanggan (Titip Jual / Cari Properti).
+            Kelola permintaan properti masuk dari pelanggan (Titip Jual / Cari
+            Properti).
           </p>
         </div>
       </div>
@@ -45,20 +53,29 @@ export default async function InquiriesPage() {
                   <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400">
                       <MessageSquare className="w-12 h-12 mb-3 opacity-20" />
-                      <p className="font-medium text-slate-500">Belum ada permintaan masuk.</p>
+                      <p className="font-medium text-slate-500">
+                        Belum ada permintaan masuk.
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 inquiries.map((inq) => (
-                  <tr key={inq.id} className="hover:bg-slate-50 transition-colors">
+                  <tr
+                    key={inq.id}
+                    className="hover:bg-slate-50 transition-colors"
+                  >
                     <td className="px-6 py-4">
-                      <span className={`inline-flex px-2.5 py-1 rounded-md text-xs font-bold ${
-                        inq.type === "CARI_PROPERTI" 
-                          ? "bg-purple-100 text-purple-700"
-                          : "bg-orange-100 text-orange-700"
-                      }`}>
-                        {inq.type === "CARI_PROPERTI" ? "CARI PROPERTI" : "TITIP JUAL"}
+                      <span
+                        className={`inline-flex px-2.5 py-1 rounded-md text-xs font-bold ${
+                          inq.type === "CARI_PROPERTI"
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-orange-100 text-orange-700"
+                        }`}
+                      >
+                        {inq.type === "CARI_PROPERTI"
+                          ? "CARI PROPERTI"
+                          : "TITIP JUAL"}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -67,8 +84,8 @@ export default async function InquiriesPage() {
                           <User className="w-3.5 h-3.5 text-slate-400" />
                           {inq.name}
                         </span>
-                        <a 
-                          href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, '')}?text=Halo%20${inq.name},%20saya%20dari%20Rumio...`} 
+                        <a
+                          href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, "")}?text=Halo%20${inq.name},%20saya%20dari%20Rumio...`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-amber-600 hover:text-amber-700 flex items-center gap-1.5 mt-1 text-xs font-medium"
@@ -101,12 +118,15 @@ export default async function InquiriesPage() {
                           month: "short",
                           year: "numeric",
                           hour: "2-digit",
-                          minute: "2-digit"
+                          minute: "2-digit",
                         })}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <InquiryStatusSelect id={inq.id} currentStatus={inq.status} />
+                      <InquiryStatusSelect
+                        id={inq.id}
+                        currentStatus={inq.status}
+                      />
                     </td>
                     <td className="px-6 py-4 text-right">
                       <DeleteInquiryButton id={inq.id} />

@@ -94,12 +94,7 @@ export default function FormPropertyScout() {
                   segera menghubungi Anda melalui nomor WhatsApp yang terdaftar
                   untuk langkah selanjutnya.
                 </p>
-                <button
-                  onClick={() => setIsSuccess(false)}
-                  className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-medium transition-colors text-white"
-                >
-                  Daftar Pendaftar Lain
-                </button>
+
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">

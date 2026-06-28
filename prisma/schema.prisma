@@ -180,3 +180,22 @@ model PropertyScout {
 
   @@map("propertyscout")
 }
+
+model PackageOrder {
+  id             String   @id @default(cuid())
+  planId         String
+  planName       String
+  customerName   String
+  whatsapp       String
+  propertyType   String
+  location       String
+  paymentMethod  String
+  totalPrice     Float
+  proofUrl       String
+  addons         Json?
+  status         String   @default("PENDING") // PENDING, CONFIRMED, REJECTED
+  createdAt      DateTime @default(now())
+
+  @@map("packageorder")
+}
+

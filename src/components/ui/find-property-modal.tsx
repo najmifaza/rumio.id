@@ -125,7 +125,7 @@ export default function FindPropertyModal({
             <div className="relative h-24 bg-[#D98A2C] overflow-hidden flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-r from-[#D98A2C] to-[#D98A2C]/40 z-10" />
               <img
-                src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop"
+                src="/Section-HeroPropertyScout.webp"
                 alt="Find Property Banner"
                 className="absolute inset-0 w-full h-full object-cover opacity-30"
               />

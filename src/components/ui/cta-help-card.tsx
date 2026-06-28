@@ -7,7 +7,7 @@ export default function CtaHelpCard() {
         className="absolute inset-0 bg-cover bg-center z-0"
         style={{
           backgroundImage:
-            'url("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80")',
+            'url("/ui-cta-help-card.webp")',
         }}
       >
         <div className="absolute inset-0 bg-[#0B1528]/70 backdrop-blur-[2px]"></div>

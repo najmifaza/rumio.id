@@ -43,8 +43,11 @@ export default async function BlogDetailPage({
     relatedPosts = relatedPosts.slice(0, 3);
   }
 
-  // Blog Populer: Ambil artikel lain (misal 3 artikel pertama)
-  const popularPosts = allBlogs.filter((b) => b.slug !== slug).slice(0, 3);
+  // Blog Populer: Ambil artikel lain dan urutkan berdasarkan view terbanyak
+  const popularPosts = allBlogs
+    .filter((b) => b.slug !== slug)
+    .sort((a, b) => b.viewCount - a.viewCount)
+    .slice(0, 3);
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20 font-sans pt-28">

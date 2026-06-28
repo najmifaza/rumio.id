@@ -10,6 +10,7 @@ export interface BlogData {
   description: string;
   content: string;
   author: string;
+  viewCount: number;
 }
 
 const stripHtml = (html: string) => {
@@ -34,6 +35,7 @@ export async function getAllBlogs(): Promise<Omit<BlogData, "content">[]> {
     image: blog.featuredImage || "/placeholder-image.jpg",
     description: stripHtml(blog.content).substring(0, 150) + "...",
     author: blog.author,
+    viewCount: blog.viewCount,
   }));
 }
 
@@ -60,5 +62,6 @@ export async function getBlogData(slug: string): Promise<BlogData | null> {
     description: stripHtml(blog.content).substring(0, 150) + "...",
     content: blog.content,
     author: blog.author,
+    viewCount: blog.viewCount,
   };
 }

@@ -10,7 +10,7 @@ export default function HeroBlog() {
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage:
-              'url("https://images.unsplash.com/photo-1580587771525-78b9dba3b914?")',
+              'url("/Section-HeroBlog.webp")',
           }}
         />
         {/* Gradient mask to blend with the white background on the left */}

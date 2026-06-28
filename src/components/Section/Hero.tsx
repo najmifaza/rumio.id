@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 import Icon360 from "@/components/ui/Icon360";
 
@@ -16,7 +17,7 @@ export default function Hero() {
       {/* Background Image Container */}
       <div className="absolute top-0 right-0 w-full lg:w-[65%] h-full z-0">
         <img
-          src="/image.png"
+          src="/Section-HeroBeranda.webp"
           alt="Modern House Background"
           className="w-full h-full object-cover object-right absolute inset-0"
         />
@@ -56,18 +57,29 @@ export default function Hero() {
 
             {/* Buttons */}
             <div className="flex flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 w-full sm:w-auto">
-              <Button size="hero" className="inline-flex w-1/2 sm:w-auto gap-1.5 sm:gap-2 shadow-lg shadow-slate-900/20">
-                <span className="text-center leading-tight">
-                  Lihat Demo Properti
-                </span>
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-              </Button>
-              <Button variant="outline" size="hero" className="inline-flex w-1/2 sm:w-auto gap-1.5 sm:gap-2 shadow-sm text-[#0B1528]">
-                <span className="text-center leading-tight">
-                  Daftarkan Properti
-                </span>
-                <Box className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 shrink-0" />
-              </Button>
+              <Link href="/properti" className="w-1/2 sm:w-auto flex">
+                <Button
+                  size="hero"
+                  className="w-full inline-flex gap-1.5 sm:gap-2 shadow-lg shadow-slate-900/20"
+                >
+                  <span className="text-center leading-tight">
+                    Lihat Properti
+                  </span>
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                </Button>
+              </Link>
+              <Link href="/pricing" className="w-1/2 sm:w-auto flex">
+                <Button
+                  variant="outline"
+                  size="hero"
+                  className="w-full inline-flex gap-1.5 sm:gap-2 shadow-sm text-[#0B1528]"
+                >
+                  <span className="text-center leading-tight">
+                    Daftarkan Properti
+                  </span>
+                  <Box className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 shrink-0" />
+                </Button>
+              </Link>
             </div>
 
             {/* Bottom Features */}

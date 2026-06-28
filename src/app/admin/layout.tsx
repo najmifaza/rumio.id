@@ -29,6 +29,11 @@ export default async function AdminLayout({
     where: { status: "NEW" },
   });
 
+  // Hitung jumlah pesanan baru
+  const newOrdersCount = await prisma.packageOrder.count({
+    where: { status: "PENDING" },
+  });
+
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-[#0B1528]">
       {/* Sidebar Kiri */}
@@ -39,10 +44,11 @@ export default async function AdminLayout({
           </Link>
         </div>
 
-        <div className="p-4 flex-1 overflow-y-auto">
-          <SidebarNav 
-            newInquiriesCount={newInquiriesCount} 
-            newScoutsCount={newScoutsCount} 
+        <div className="p-4 flex-1 overflow-y-auto" data-lenis-prevent="true">
+          <SidebarNav
+            newInquiriesCount={newInquiriesCount}
+            newScoutsCount={newScoutsCount}
+            newOrdersCount={newOrdersCount}
           />
         </div>
 
