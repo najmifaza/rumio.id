@@ -7,53 +7,54 @@ export const dynamic = "force-dynamic";
 export default async function PropertiesPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const page = typeof searchParams.page === "string" ? parseInt(searchParams.page) : 1;
+  const resolvedParams = await searchParams;
+  const page = typeof resolvedParams.page === "string" ? parseInt(resolvedParams.page) : 1;
   const limit = 12;
   const skip = (page - 1) * limit;
 
-  // Build Where query based on searchParams
+  // Build Where query based on resolvedParams
   const where: Prisma.PropertyWhereInput = { status: "AVAILABLE" };
 
-  if (typeof searchParams.q === "string" && searchParams.q) {
+  if (typeof resolvedParams.q === "string" && resolvedParams.q) {
     where.OR = [
-      { title: { contains: searchParams.q } },
-      { location: { contains: searchParams.q } },
+      { title: { contains: resolvedParams.q } },
+      { location: { contains: resolvedParams.q } },
     ];
   }
 
-  if (typeof searchParams.transaction === "string" && searchParams.transaction) {
-    where.listingType = { in: searchParams.transaction.split(",") };
+  if (typeof resolvedParams.transaction === "string" && resolvedParams.transaction) {
+    where.listingType = { in: resolvedParams.transaction.split(",") };
   }
 
-  if (typeof searchParams.type === "string" && searchParams.type) {
-    where.propertyType = { in: searchParams.type.split(",") };
+  if (typeof resolvedParams.type === "string" && resolvedParams.type) {
+    where.propertyType = { in: resolvedParams.type.split(",") };
   }
 
-  if (typeof searchParams.minPrice === "string" && searchParams.minPrice) {
-    where.price = { ...where.price, gte: parseFloat(searchParams.minPrice) };
+  if (typeof resolvedParams.minPrice === "string" && resolvedParams.minPrice) {
+    where.price = { ...where.price, gte: parseFloat(resolvedParams.minPrice) };
   }
-  if (typeof searchParams.maxPrice === "string" && searchParams.maxPrice) {
-    where.price = { ...where.price, lte: parseFloat(searchParams.maxPrice) };
-  }
-
-  if (typeof searchParams.minArea === "string" && searchParams.minArea) {
-    where.buildingArea = { ...where.buildingArea, gte: parseFloat(searchParams.minArea) };
-  }
-  if (typeof searchParams.maxArea === "string" && searchParams.maxArea) {
-    where.buildingArea = { ...where.buildingArea, lte: parseFloat(searchParams.maxArea) };
+  if (typeof resolvedParams.maxPrice === "string" && resolvedParams.maxPrice) {
+    where.price = { ...where.price, lte: parseFloat(resolvedParams.maxPrice) };
   }
 
-  if (typeof searchParams.minLand === "string" && searchParams.minLand) {
-    where.landArea = { ...where.landArea, gte: parseFloat(searchParams.minLand) };
+  if (typeof resolvedParams.minArea === "string" && resolvedParams.minArea) {
+    where.buildingArea = { ...where.buildingArea, gte: parseFloat(resolvedParams.minArea) };
   }
-  if (typeof searchParams.maxLand === "string" && searchParams.maxLand) {
-    where.landArea = { ...where.landArea, lte: parseFloat(searchParams.maxLand) };
+  if (typeof resolvedParams.maxArea === "string" && resolvedParams.maxArea) {
+    where.buildingArea = { ...where.buildingArea, lte: parseFloat(resolvedParams.maxArea) };
   }
 
-  if (typeof searchParams.beds === "string" && searchParams.beds) {
-    where.bedrooms = { gte: parseInt(searchParams.beds) };
+  if (typeof resolvedParams.minLand === "string" && resolvedParams.minLand) {
+    where.landArea = { ...where.landArea, gte: parseFloat(resolvedParams.minLand) };
+  }
+  if (typeof resolvedParams.maxLand === "string" && resolvedParams.maxLand) {
+    where.landArea = { ...where.landArea, lte: parseFloat(resolvedParams.maxLand) };
+  }
+
+  if (typeof resolvedParams.beds === "string" && resolvedParams.beds) {
+    where.bedrooms = { gte: parseInt(resolvedParams.beds) };
   }
 
   const [properties, total] = await Promise.all([

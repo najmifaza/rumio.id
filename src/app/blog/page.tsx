@@ -16,10 +16,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export default async function BlogPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const page = typeof searchParams.page === "string" ? parseInt(searchParams.page) : 1;
-  const category = typeof searchParams.category === "string" ? searchParams.category : undefined;
+  const resolvedParams = await searchParams;
+  const page = typeof resolvedParams.page === "string" ? parseInt(resolvedParams.page) : 1;
+  const category = typeof resolvedParams.category === "string" ? resolvedParams.category : undefined;
 
   const { data: blogs, total, totalPages } = await getAllBlogs({ page, limit: 5, category });
   const categories = await getBlogCategories();
