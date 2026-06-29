@@ -30,8 +30,6 @@ export default function SidebarNav({
 }) {
   const pathname = usePathname();
   const isAdmin = userRole === "ADMIN";
-
-  const [isSettingsOpen, setIsSettingsOpen] = useState(pathname.startsWith("/admin/settings"));
   const [isInboxOpen, setIsInboxOpen] = useState(
     pathname.startsWith("/admin/inquiries") || pathname.startsWith("/admin/scouts") || pathname.startsWith("/admin/orders"),
   );
@@ -62,19 +60,7 @@ export default function SidebarNav({
     { name: "Galeri Media", href: "/admin/media", icon: ImageIcon },
     { name: "Harga & Paket", href: "/admin/pricing", icon: CreditCard },
     { name: "Pengguna", href: "/admin/users", icon: ShieldCheck },
-    {
-      name: "Pengaturan",
-      icon: Settings,
-      isDropdown: true,
-      isOpen: isSettingsOpen,
-      toggle: () => setIsSettingsOpen(!isSettingsOpen),
-      activePaths: ["/admin/settings"],
-      children: [
-        { name: "Umum", href: "/admin/settings/general" },
-        { name: "Kontak", href: "/admin/settings/contact" },
-        { name: "Sosial Media", href: "/admin/settings/social" },
-      ],
-    },
+    { name: "Pengaturan", href: "/admin/settings", icon: Settings },
   ];
 
   const navItems = isAdmin

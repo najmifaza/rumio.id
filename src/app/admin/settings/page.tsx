@@ -1,4 +1,4 @@
-import { getSettings } from "../actions";
+import { getSettings } from "./actions";
 import SettingsForm, { SettingField } from "@/components/admin/SettingsForm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -6,13 +6,19 @@ import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function ContactSettingsPage() {
+export default async function SettingsPage() {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN") {
     redirect("/admin");
   }
 
   const fields: SettingField[] = [
+    { 
+      key: "general_office_address", 
+      label: "Alamat Kantor Utama", 
+      type: "textarea", 
+      placeholder: "Contoh: Jl. Bintaro Utama Raya No.1..." 
+    },
     { 
       key: "contact_whatsapp", 
       label: "Nomor WhatsApp (Admin / CS)", 
@@ -31,6 +37,30 @@ export default async function ContactSettingsPage() {
       label: "Jam Operasional", 
       type: "text", 
       placeholder: "Contoh: Senin - Sabtu: 08:00 - 17:00" 
+    },
+    { 
+      key: "social_instagram", 
+      label: "Instagram URL", 
+      type: "url",
+      placeholder: "https://instagram.com/rumio.id"
+    },
+    { 
+      key: "social_facebook", 
+      label: "Facebook URL", 
+      type: "url", 
+      placeholder: "https://facebook.com/rumio.id" 
+    },
+    { 
+      key: "social_tiktok", 
+      label: "TikTok URL", 
+      type: "url", 
+      placeholder: "https://tiktok.com/@rumio.id" 
+    },
+    { 
+      key: "social_youtube", 
+      label: "YouTube URL", 
+      type: "url", 
+      placeholder: "https://youtube.com/c/rumio_id" 
     }
   ];
 
@@ -38,8 +68,8 @@ export default async function ContactSettingsPage() {
 
   return (
     <SettingsForm 
-      title="Pengaturan Kontak" 
-      description="Atur informasi kontak yang akan ditampilkan kepada pengunjung."
+      title="Pengaturan Sistem" 
+      description="Kelola informasi operasional, kontak, dan sosial media website Anda dalam satu halaman."
       fields={fields}
       initialData={res.data || {}}
     />
