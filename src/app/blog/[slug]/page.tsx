@@ -5,6 +5,7 @@ import Breadcrumbs from "@/components/ui/breadcrumbs";
 import CtaHelpCard from "@/components/ui/cta-help-card";
 import { Clock, Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { sanitizeBlogContent } from "@/lib/sanitize";
 
 // This allows Next.js to generate static pages for each blog
 export async function generateStaticParams() {
@@ -149,7 +150,7 @@ export default async function BlogDetailPage({
 
               <div
                 className="prose prose-slate prose-lg max-w-none prose-headings:text-[#0B1528] prose-a:text-amber-600 hover:prose-a:text-amber-700 prose-img:rounded-xl prose-headings:font-bold prose-p:my-4 prose-li:my-0 [&_ul_li_p]:my-0 [&_ol_li_p]:my-0 [&_ul]:my-4"
-                dangerouslySetInnerHTML={{ __html: blog.content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeBlogContent(blog.content) }}
               />
             </article>
 

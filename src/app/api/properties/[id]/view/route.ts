@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
+import { viewLimiter } from "@/lib/rate-limit";
 
 export async function POST(
   req: Request,
@@ -7,6 +9,14 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
+
+    // Rate limiting: max 10 per minute per IP+property
+    const headersList = await headers();
+    const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateCheck = viewLimiter.check(`view:${ip}:${id}`);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ success: true }); // Silently ignore, don't reveal rate limit
+    }
     
     await prisma.property.update({
       where: { id },
@@ -19,3 +29,4 @@ export async function POST(
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }
+

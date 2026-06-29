@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import sharp from "sharp";
@@ -80,6 +82,11 @@ export async function submitPackageOrder(formData: FormData) {
 
 export async function updateOrderStatus(id: string, status: string) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user as any).role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" };
+    }
+
     await prisma.packageOrder.update({
       where: { id },
       data: { status },
@@ -92,6 +99,11 @@ export async function updateOrderStatus(id: string, status: string) {
 
 export async function deleteOrder(id: string) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user as any).role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" };
+    }
+
     await prisma.packageOrder.delete({
       where: { id },
     });

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -26,15 +27,21 @@ const stripHtml = (html: string) => {
   return html.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
 };
 
+// Cache property query to avoid duplicate DB calls between generateMetadata and page component
+const getProperty = cache(async (slug: string) => {
+  return prisma.property.findUnique({
+    where: { slug },
+    include: { images: true },
+  });
+});
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const property = await prisma.property.findUnique({
-    where: { slug },
-  });
+  const property = await getProperty(slug);
 
   if (!property) {
     return {
@@ -83,12 +90,7 @@ export default async function PropertyDetailPage({
   const { data: settings } = await getSettings(["contact_whatsapp"]);
   const waNumber = settings?.contact_whatsapp?.replace(/[^0-9]/g, "") || "";
 
-  // Fetch from database
-  const property = await prisma.property.findUnique({
-    where: { slug },
-    include: { images: true }
-  });
-
+  const property = await getProperty(slug);
 
   if (!property) {
     notFound();

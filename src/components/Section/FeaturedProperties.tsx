@@ -8,6 +8,18 @@ export default async function FeaturedProperties() {
     where: { status: "AVAILABLE" },
     orderBy: { createdAt: "desc" },
     take: 4,
+    select: {
+      id: true,
+      slug: true,
+      featuredImage: true,
+      title: true,
+      location: true,
+      bedrooms: true,
+      bathrooms: true,
+      buildingArea: true,
+      price: true,
+      status: true,
+    },
   });
 
   return (
