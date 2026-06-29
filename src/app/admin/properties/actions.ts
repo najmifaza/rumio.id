@@ -6,12 +6,23 @@ import { revalidatePath } from "next/cache";
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import sharp from 'sharp';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function deleteProperty(id: string) {
   try {
-    await prisma.property.delete({
-      where: { id },
-    });
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    // Cek kepemilikan jika bukan Admin Utama
+    if (session.user.role !== "ADMIN") {
+      const property = await prisma.property.findUnique({ where: { id } });
+      if (!property || property.ownerId !== session.user.id) {
+        return { success: false, error: "Anda tidak memiliki izin untuk menghapus properti ini." };
+      }
+    }
+
+    await prisma.property.delete({ where: { id } });
     revalidatePath("/admin/properties");
     revalidatePath("/properti");
     return { success: true };
@@ -20,6 +31,7 @@ export async function deleteProperty(id: string) {
     return { success: false, error: "Gagal menghapus properti" };
   }
 }
+
 
 async function handleImageUpload(file: File | null) {
   if (!file || file.size === 0) return null;
@@ -151,11 +163,15 @@ export async function saveProperty(formData: FormData, id?: string) {
     };
 
     if (id) {
-      // Update existing
-      await prisma.property.update({ where: { id }, data });
+      // Update existing — termasuk update ownerId jika ADMIN mengubah assignment
+      const formOwnerId = formData.get("ownerId") as string | null;
+      const updateData = formOwnerId
+        ? { ...data, ownerId: formOwnerId }
+        : data;
+
+      await prisma.property.update({ where: { id }, data: updateData });
       
       // ISS-01 FIX: Hapus SEMUA gambar lama sebelum insert batch baru.
-      // Tanpa ini, setiap kali admin menyimpan, gambar berlipat ganda di DB.
       await prisma.propertyImage.deleteMany({ where: { propertyId: id } });
       await prisma.propertyImage.createMany({
         data: finalImages.map(img => ({
@@ -165,13 +181,18 @@ export async function saveProperty(formData: FormData, id?: string) {
         })),
       });
     } else {
-      // ISS-04 FIX: Pindahkan query admin ke dalam blok create saja — tidak perlu dipanggil saat update.
-      const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
-      if (!admin) throw new Error("Admin not found");
+      // ADMIN memilih pemilik properti melalui dropdown di form
+      const session = await getServerSession(authOptions);
+      if (!session?.user?.id || session.user.role !== "ADMIN") {
+        throw new Error("Unauthorized: Hanya Admin Utama yang bisa membuat properti.");
+      }
+
+      // ownerId dari pilihan dropdown; fallback ke session.user.id jika kosong
+      const formOwnerId = (formData.get("ownerId") as string) || session.user.id;
 
       // Create new
       const newProperty = await prisma.property.create({ 
-        data: { ...data, ownerId: admin.id } 
+        data: { ...data, ownerId: formOwnerId } 
       });
       
       await prisma.propertyImage.createMany({

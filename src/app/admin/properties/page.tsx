@@ -1,12 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPriceFull } from "@/lib/format";
 import DeletePropertyButton from "@/components/admin/DeletePropertyButton";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 // Helper component untuk merender tabel
-function PropertyTable({ properties, emptyMessage }: { properties: any[], emptyMessage: string }) {
+function PropertyTable({ properties, emptyMessage, isAdmin }: { properties: any[], emptyMessage: string, isAdmin: boolean }) {
   return (
     <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden mb-12">
       <div className="overflow-x-auto">
@@ -17,13 +21,14 @@ function PropertyTable({ properties, emptyMessage }: { properties: any[], emptyM
               <th className="px-6 py-4">Tipe & Status</th>
               <th className="px-6 py-4">Harga</th>
               <th className="px-6 py-4 text-center">Views</th>
+              <th className="px-6 py-4 text-center">WA Clicks</th>
               <th className="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {properties.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                   {emptyMessage}
                 </td>
               </tr>
@@ -68,6 +73,9 @@ function PropertyTable({ properties, emptyMessage }: { properties: any[], emptyM
                   <td className="px-6 py-4 text-center font-medium">
                     {prop.viewCount}
                   </td>
+                  <td className="px-6 py-4 text-center font-medium text-emerald-600">
+                    {(prop as any).whatsappClicks || 0}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <Link href={`/properti/${prop.slug}`} target="_blank">
@@ -75,12 +83,16 @@ function PropertyTable({ properties, emptyMessage }: { properties: any[], emptyM
                           <Eye className="w-4 h-4" />
                         </Button>
                       </Link>
-                      <Link href={`/admin/properties/${prop.id}/edit`}>
-                        <Button variant="outline" size="icon" className="w-9 h-9 rounded-lg border-slate-200 text-slate-500 hover:text-amber-600 hover:bg-amber-50">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                      <DeletePropertyButton id={prop.id} />
+                      {isAdmin && (
+                        <>
+                          <Link href={`/admin/properties/${prop.id}/edit`}>
+                            <Button variant="outline" size="icon" className="w-9 h-9 rounded-lg border-slate-200 text-slate-500 hover:text-amber-600 hover:bg-amber-50">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </Link>
+                          <DeletePropertyButton id={prop.id} />
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -94,8 +106,17 @@ function PropertyTable({ properties, emptyMessage }: { properties: any[], emptyM
 }
 
 export default async function AdminPropertiesPage() {
+  const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.role === "ADMIN";
+  const userId = session?.user?.id as string;
+
+  // ADMIN lihat semua, OWNER hanya lihat yang di-assign ke mereka
+  const whereClause = isAdmin ? {} : { ownerId: userId };
+
   const properties = await prisma.property.findMany({
+    where: whereClause,
     orderBy: { createdAt: "desc" },
+    include: { owner: { select: { name: true } } },
   });
 
   const availableProperties = properties.filter(p => p.status !== 'SOLD');
@@ -106,20 +127,25 @@ export default async function AdminPropertiesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#0B1528] mb-1">Daftar Properti</h1>
-          <p className="text-slate-500 font-medium">Kelola semua listing properti Anda di sini.</p>
+          <p className="text-slate-500 font-medium">
+            {isAdmin ? "Kelola semua listing properti di sini." : "Properti yang di-assign kepada Anda."}
+          </p>
         </div>
-        <Link href="/admin/properties/create">
-          <Button className="bg-amber-600 hover:bg-amber-700 text-white font-bold h-11 px-6 rounded-xl flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Tambah Properti
-          </Button>
-        </Link>
+        {isAdmin && (
+          <Link href="/admin/properties/create">
+            <Button className="bg-amber-600 hover:bg-amber-700 text-white font-bold h-11 px-6 rounded-xl flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              Tambah Properti
+            </Button>
+          </Link>
+        )}
       </div>
 
       <h2 className="text-xl font-bold text-[#0B1528] mb-4">Properti Aktif</h2>
       <PropertyTable 
         properties={availableProperties} 
-        emptyMessage="Belum ada data properti aktif. Silakan tambah baru." 
+        emptyMessage={isAdmin ? "Belum ada data properti aktif." : "Belum ada properti yang di-assign kepada Anda."}
+        isAdmin={isAdmin}
       />
 
       {soldProperties.length > 0 && (
@@ -127,7 +153,8 @@ export default async function AdminPropertiesPage() {
           <h2 className="text-xl font-bold text-[#0B1528] mb-4">Properti Terjual</h2>
           <PropertyTable 
             properties={soldProperties} 
-            emptyMessage="Belum ada properti yang terjual." 
+            emptyMessage="Belum ada properti yang terjual."
+            isAdmin={isAdmin}
           />
         </>
       )}

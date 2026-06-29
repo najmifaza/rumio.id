@@ -1,8 +1,26 @@
 import PropertyForm from "@/components/admin/PropertyForm";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 
-export default function CreatePropertyPage() {
+export default async function CreatePropertyPage() {
+  const session = await getServerSession(authOptions);
+
+  // Hanya ADMIN yang boleh membuat properti
+  if (!session || session.user.role !== "ADMIN") {
+    redirect("/admin/properties");
+  }
+
+  // Ambil semua OWNER untuk dropdown assign
+  const owners = await prisma.user.findMany({
+    where: { role: "OWNER" },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: "asc" },
+  });
+
   return (
     <div>
       <div className="mb-8">
@@ -14,7 +32,7 @@ export default function CreatePropertyPage() {
         <p className="text-slate-500 font-medium">Lengkapi detail form di bawah untuk mempublikasikan properti.</p>
       </div>
 
-      <PropertyForm />
+      <PropertyForm owners={owners} />
     </div>
   );
 }

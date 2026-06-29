@@ -14,7 +14,7 @@ export default async function FeaturedProperties() {
     <section className="w-full bg-white py-24 px-6 lg:px-12 xl:px-0 font-sans">
       <div className="max-w-[1200px] mx-auto">
         {/* Section Header */}
-        <div className="flex items-start justify-between mb-10 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-6 sm:gap-4">
           <div className="space-y-2">
             <span className="text-xs font-bold text-amber-600 tracking-[0.15em] uppercase">
               Properti Unggulan
@@ -26,7 +26,7 @@ export default async function FeaturedProperties() {
 
           <Link
             href="/properti"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-amber-600 transition-colors whitespace-nowrap mt-auto group/link"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-600 hover:text-amber-700 transition-colors whitespace-nowrap group/link"
           >
             Lihat semua properti
             <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover/link:translate-x-1" />

@@ -1,6 +1,12 @@
 import { ArrowRight } from "lucide-react";
+import { getSettings } from "@/app/admin/settings/actions";
 
-export default function CtaHelpCard() {
+export default async function CtaHelpCard() {
+  const { data } = await getSettings(["contact_whatsapp"]);
+  const waNumber = data?.contact_whatsapp?.replace(/[^0-9]/g, "") || "";
+  const waText = encodeURIComponent("Halo Admin Rumio, saya butuh bantuan untuk memasarkan properti saya melalui Rumio.id.");
+  const waLink = waNumber ? `https://wa.me/${waNumber}?text=${waText}` : "#";
+
   return (
     <div className="relative rounded-[20px] overflow-hidden p-6 lg:p-8 shadow-md">
       <div
@@ -21,10 +27,15 @@ export default function CtaHelpCard() {
           Tim Rumio siap membantu menampilkan properti Anda secara profesional.
         </p>
 
-        <button className="w-full bg-[#D98A2C] hover:bg-amber-600 text-white text-[15px] font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+        <a 
+          href={waLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full bg-[#D98A2C] hover:bg-amber-600 text-white text-[15px] font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors"
+        >
           Hubungi Kami via WhatsApp
           <ArrowRight className="w-[18px] h-[18px]" />
-        </button>
+        </a>
       </div>
     </div>
   );

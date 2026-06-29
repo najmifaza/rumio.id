@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { formatPriceFull } from "@/lib/format";
 import PricingCardsWrapper from "./PricingCardsWrapper";
+import { getSettings } from "@/app/admin/settings/actions";
 
 const IconMap: Record<string, any> = {
   Send,
@@ -24,6 +25,11 @@ export default async function PricingSection() {
     orderBy: { price: 'asc' }
   });
 
+  const { data } = await getSettings(["contact_whatsapp"]);
+  const waNumber = data?.contact_whatsapp?.replace(/[^0-9]/g, "") || "";
+  const waText = encodeURIComponent("Halo Admin Rumio, saya tertarik untuk mendiskusikan paket khusus (Custom Plan) untuk pemasaran properti saya.");
+  const waLink = waNumber ? `https://wa.me/${waNumber}?text=${waText}` : "#";
+
   return (
     <section className="py-20 bg-slate-50 px-6 lg:px-12 xl:px-0">
       <div className="max-w-[1200px] mx-auto">
@@ -41,7 +47,7 @@ export default async function PricingSection() {
         </div>
 
         {/* Pricing Cards */}
-        <PricingCardsWrapper pricingPlans={pricingPlans} addons={addons} />
+        <PricingCardsWrapper pricingPlans={pricingPlans} addons={addons} whatsappNumber={waNumber} />
 
         {/* Custom Package Banner */}
         <div className="mt-16 bg-white border border-slate-200 rounded-[24px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
@@ -59,13 +65,15 @@ export default async function PricingSection() {
             </div>
           </div>
           
-          <Button
-            variant="outline"
-            className="w-full md:w-auto h-12 px-6 rounded-xl border-amber-200 text-[#0B1528] hover:bg-amber-50 flex items-center gap-2 font-semibold whitespace-nowrap"
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full md:w-auto h-12 px-6 rounded-xl border-amber-200 text-[#0B1528] hover:bg-amber-50 flex items-center justify-center gap-2 font-semibold whitespace-nowrap border transition-colors"
           >
             <MessageCircle className="w-5 h-5 text-amber-600" />
             Hubungi Kami
-          </Button>
+          </a>
         </div>
       </div>
     </section>

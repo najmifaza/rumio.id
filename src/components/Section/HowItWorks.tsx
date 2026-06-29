@@ -17,9 +17,9 @@ export default function HowItWorks() {
               3 Langkah Mudah
               <br className="hidden lg:block" /> Bersama Rumio
             </h2>
-            <Link href="/daftarkan-properti">
+            <Link href="/pricing">
               <Button className="flex gap-2 px-6 py-4 h-auto text-sm rounded-lg w-fit">
-                Daftarkan Properti Sekarang
+                Lihat Paket Langganan
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>

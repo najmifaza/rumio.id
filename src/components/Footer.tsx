@@ -4,12 +4,36 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MapPin, Phone, Mail, ArrowRight } from "lucide-react";
 
-export default function Footer() {
+interface FooterProps {
+  whatsappNumber?: string;
+  rawWhatsapp?: string;
+  email?: string;
+  address?: string;
+  socials?: {
+    instagram?: string;
+    facebook?: string;
+    tiktok?: string;
+    youtube?: string;
+  };
+  description?: string;
+}
+
+export default function Footer({ 
+  whatsappNumber = "", 
+  rawWhatsapp = "", 
+  email = "hello@rumio.id", 
+  address = "Bintaro Jaya, Tangerang Selatan",
+  socials = {},
+  description = "Solusi terbaik untuk mencari, membeli, dan menyewa properti di kawasan Bintaro dan sekitarnya."
+}: FooterProps) {
   const pathname = usePathname();
 
   if (pathname?.startsWith("/admin")) {
     return null;
   }
+
+  const waText = encodeURIComponent("Halo Admin Rumio, saya mengunjungi website Rumio.id dan ingin bertanya seputar layanan Anda.");
+  const waLink = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${waText}` : "#";
 
   return (
     <footer className="bg-[#0B1528] text-white pt-16 pb-8 border-t border-slate-800 mt-auto">
@@ -24,34 +48,47 @@ export default function Footer() {
               Rumio.id adalah platform properti terpercaya yang membantu Anda menemukan rumah, apartemen, atau tanah idaman dengan proses yang mudah, aman, dan transparan.
             </p>
             <div className="flex items-center gap-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#D98A2C] transition-colors group">
-                <svg className="w-5 h-5 text-slate-300 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                </svg>
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#D98A2C] transition-colors group">
-                <svg className="w-5 h-5 text-slate-300 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
-                </svg>
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#D98A2C] transition-colors group">
-                <svg className="w-5 h-5 text-slate-300 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-              </a>
+              {/* SOCIAL LINKS */}
+              {socials.instagram && (
+                <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-[#D98A2C] hover:text-white transition-all">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                  </svg>
+                </a>
+              )}
+              {socials.facebook && (
+                <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-[#D98A2C] hover:text-white transition-all">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+              )}
+              {socials.tiktok && (
+                <a href={socials.tiktok} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-[#D98A2C] hover:text-white transition-all">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.5-2.97 5.76-1.84 1.25-4.14 1.48-6.19.8-2.03-.69-3.71-2.22-4.52-4.2-.82-1.99-.74-4.29.23-6.23 1.01-1.95 2.87-3.41 4.96-3.9 1.15-.27 2.34-.28 3.51-.12v4.06c-1.39-.14-2.8.27-3.83 1.12-1.01.83-1.6 2.1-1.6 3.4.01 1.49.88 2.85 2.21 3.49 1.35.63 2.95.42 4.09-.54 1.05-.88 1.63-2.2 1.63-3.57.02-4.8.01-9.61.02-14.41z"/>
+                  </svg>
+                </a>
+              )}
+              {socials.youtube && (
+                <a href={socials.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-[#D98A2C] hover:text-white transition-all">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </a>
+              )}
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
             <h3 className="text-lg font-bold mb-6">Tautan Cepat</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {[
                 { name: "Beranda", path: "/" },
-                { name: "Cari Properti", path: "/properti" },
-                { name: "Proyek Baru", path: "/properti?type=new" },
+                { name: "Properti Dijual", path: "/properti" },
                 { name: "Artikel & Berita", path: "/blog" },
-                { name: "Tentang Kami", path: "/about" },
+                { name: "Paket Agen", path: "/pricing" },
               ].map((link, idx) => (
                 <li key={idx}>
                   <Link
@@ -66,16 +103,15 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Layanan Kami */}
+          {/* Layanan */}
           <div>
             <h3 className="text-lg font-bold mb-6">Layanan Kami</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {[
-                { name: "Jual Properti", path: "#" },
-                { name: "Beli Properti", path: "#" },
-                { name: "Sewa Properti", path: "#" },
+                { name: "Titip Jual Properti", path: "#" },
                 { name: "Konsultasi KPR", path: "#" },
-                { name: "Virtual Tour 360", path: "#" },
+                { name: "Virtual Tour 360°", path: "#" },
+                { name: "Property Management", path: "#" },
               ].map((link, idx) => (
                 <li key={idx}>
                   <Link
@@ -97,20 +133,20 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#D98A2C] shrink-0 mt-0.5" />
                 <span className="text-slate-400 text-sm leading-relaxed">
-                  Jl. Contoh Alamat No. 123, SCBD, Jakarta Selatan, 12190
+                  {address}
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-[#D98A2C] shrink-0" />
-                <span className="text-slate-400 text-sm">
-                  +62 812-3456-7890
-                </span>
+                <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-slate-400 text-sm hover:text-white transition-colors">
+                  {rawWhatsapp || whatsappNumber || "+62 812-3456-7890"}
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-[#D98A2C] shrink-0" />
-                <span className="text-slate-400 text-sm">
-                  halo@rumio.id
-                </span>
+                <a href={`mailto:${email}`} className="text-slate-400 text-sm hover:text-white transition-colors">
+                  {email}
+                </a>
               </li>
             </ul>
           </div>

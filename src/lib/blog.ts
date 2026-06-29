@@ -21,12 +21,45 @@ const stripHtml = (html: string) => {
   return text.replace(/\s+/g, ' ').trim();
 };
 
-export async function getAllBlogs(): Promise<Omit<BlogData, "content">[]> {
-  const blogs = await prisma.blog.findMany({
-    orderBy: { createdAt: 'desc' }
+export async function getBlogCategories() {
+  const blogs = await prisma.blog.groupBy({
+    by: ['category'],
+    _count: {
+      category: true,
+    },
   });
 
-  return blogs.map(blog => ({
+  return blogs
+    .map(b => ({
+      name: b.category,
+      count: b._count.category
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export async function getAllBlogs({
+  page = 1,
+  limit = 10,
+  category,
+}: {
+  page?: number;
+  limit?: number;
+  category?: string;
+} = {}): Promise<{ data: Omit<BlogData, "content">[], total: number, totalPages: number }> {
+  const skip = (page - 1) * limit;
+  const where = category ? { category } : {};
+
+  const [blogs, total] = await Promise.all([
+    prisma.blog.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    prisma.blog.count({ where })
+  ]);
+
+  const data = blogs.map(blog => ({
     slug: blog.slug,
     title: blog.title,
     category: blog.category,
@@ -37,6 +70,12 @@ export async function getAllBlogs(): Promise<Omit<BlogData, "content">[]> {
     author: blog.author,
     viewCount: blog.viewCount,
   }));
+
+  return {
+    data,
+    total,
+    totalPages: Math.ceil(total / limit),
+  };
 }
 
 export async function getBlogData(slug: string): Promise<BlogData | null> {

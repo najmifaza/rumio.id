@@ -1,29 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import PropertyCard from "@/components/ui/property-card";
-import { Filter, X, Search } from "lucide-react";
+import { Filter, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
 import { Property } from "@prisma/client";
 
 interface PropertiesClientProps {
   initialProperties: Property[];
+  totalProperties: number;
+  totalPages: number;
+  currentPage: number;
 }
 
 export default function PropertiesClient({
   initialProperties,
+  totalProperties,
+  totalPages,
+  currentPage,
 }: PropertiesClientProps) {
-  const [transactionType, setTransactionType] = useState<string[]>([]);
-  const [propertyType, setPropertyType] = useState<string[]>([]);
-  const [minPrice, setMinPrice] = useState<string>("");
-  const [maxPrice, setMaxPrice] = useState<string>("");
-  const [minBuildingArea, setMinBuildingArea] = useState<string>("");
-  const [maxBuildingArea, setMaxBuildingArea] = useState<string>("");
-  const [minLandArea, setMinLandArea] = useState<string>("");
-  const [maxLandArea, setMaxLandArea] = useState<string>("");
-  const [bedrooms, setBedrooms] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [transactionType, setTransactionType] = useState<string[]>(searchParams.get("transaction") ? searchParams.get("transaction")!.split(",") : []);
+  const [propertyType, setPropertyType] = useState<string[]>(searchParams.get("type") ? searchParams.get("type")!.split(",") : []);
+  const [minPrice, setMinPrice] = useState<string>(searchParams.get("minPrice") || "");
+  const [maxPrice, setMaxPrice] = useState<string>(searchParams.get("maxPrice") || "");
+  const [minBuildingArea, setMinBuildingArea] = useState<string>(searchParams.get("minArea") || "");
+  const [maxBuildingArea, setMaxBuildingArea] = useState<string>(searchParams.get("maxArea") || "");
+  const [minLandArea, setMinLandArea] = useState<string>(searchParams.get("minLand") || "");
+  const [maxLandArea, setMaxLandArea] = useState<string>(searchParams.get("maxLand") || "");
+  const [bedrooms, setBedrooms] = useState<number | null>(searchParams.get("beds") ? parseInt(searchParams.get("beds")!) : null);
+  const [searchQuery, setSearchQuery] = useState<string>(searchParams.get("q") || "");
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -39,6 +49,32 @@ export default function PropertiesClient({
     }
   };
 
+  const handleApplyFilter = () => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (transactionType.length > 0) params.set("transaction", transactionType.join(","));
+    if (propertyType.length > 0) params.set("type", propertyType.join(","));
+    if (minPrice) params.set("minPrice", minPrice);
+    if (maxPrice) params.set("maxPrice", maxPrice);
+    if (minBuildingArea) params.set("minArea", minBuildingArea);
+    if (maxBuildingArea) params.set("maxArea", maxBuildingArea);
+    if (minLandArea) params.set("minLand", minLandArea);
+    if (maxLandArea) params.set("maxLand", maxLandArea);
+    if (bedrooms) params.set("beds", bedrooms.toString());
+    
+    // reset to page 1 on filter
+    params.set("page", "1");
+    
+    router.push(`/properti?${params.toString()}`);
+    setIsFilterOpen(false);
+  };
+
+  const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleApplyFilter();
+    }
+  };
+
   const handleReset = () => {
     setTransactionType([]);
     setPropertyType([]);
@@ -50,43 +86,10 @@ export default function PropertiesClient({
     setMaxLandArea("");
     setBedrooms(null);
     setSearchQuery("");
+    
+    router.push("/properti");
+    setIsFilterOpen(false);
   };
-
-  const filteredProperties = initialProperties.filter((p) => {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchTitle = p.title.toLowerCase().includes(query);
-      const matchLocation = p.location.toLowerCase().includes(query);
-      if (!matchTitle && !matchLocation) return false;
-    }
-
-    if (
-      transactionType.length > 0 &&
-      (!p.listingType || !transactionType.includes(p.listingType))
-    )
-      return false;
-
-    if (
-      propertyType.length > 0 &&
-      (!p.propertyType || !propertyType.includes(p.propertyType))
-    )
-      return false;
-
-    if (minPrice && p.price < parseInt(minPrice)) return false;
-    if (maxPrice && p.price > parseInt(maxPrice)) return false;
-
-    if (minBuildingArea && p.buildingArea < parseInt(minBuildingArea))
-      return false;
-    if (maxBuildingArea && p.buildingArea > parseInt(maxBuildingArea))
-      return false;
-
-    if (minLandArea && p.landArea < parseInt(minLandArea)) return false;
-    if (maxLandArea && p.landArea > parseInt(maxLandArea)) return false;
-
-    if (bedrooms !== null && p.bedrooms < bedrooms) return false;
-
-    return true;
-  });
 
   const renderFilterContent = () => (
     <div className="space-y-8">
@@ -267,7 +270,7 @@ export default function PropertiesClient({
       <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
         <Button
           className="w-full bg-[#0B1528] hover:bg-[#1a2b4c] text-white h-11 rounded-lg"
-          onClick={() => setIsFilterOpen(false)}
+          onClick={handleApplyFilter}
         >
           Terapkan Filter
         </Button>
@@ -296,7 +299,7 @@ export default function PropertiesClient({
               Cari Properti Impian
             </h1>
             <p className="text-slate-500">
-              Menampilkan {filteredProperties.length} properti yang sesuai
+              Menampilkan {totalProperties} properti yang sesuai
               dengan kriteria Anda
             </p>
           </div>
@@ -306,9 +309,10 @@ export default function PropertiesClient({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Cari lokasi, nama properti..."
+                placeholder="Cari lokasi, nama properti... (Tekan Enter)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchSubmit}
                 className="w-full h-11 pl-10 pr-4 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none text-slate-600 bg-white"
               />
             </div>
@@ -361,24 +365,77 @@ export default function PropertiesClient({
 
           {/* Main Content */}
           <div className="flex-1">
-            {filteredProperties.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredProperties.map((property) => (
-                  <PropertyCard
-                    key={property.slug}
-                    image={property.featuredImage || "/placeholder-image.jpg"}
-                    title={property.title}
-                    location={property.location}
-                    beds={property.bedrooms}
-                    baths={property.bathrooms}
-                    cars={0}
-                    area={property.buildingArea}
-                    priceNumeric={property.price}
-                    link={`/properti/${property.slug}`}
-                    status={property.status}
-                  />
-                ))}
-              </div>
+            {initialProperties.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {initialProperties.map((property) => (
+                    <PropertyCard
+                      key={property.slug}
+                      image={property.featuredImage || "/placeholder-image.jpg"}
+                      title={property.title}
+                      location={property.location}
+                      beds={property.bedrooms}
+                      baths={property.bathrooms}
+                      cars={0}
+                      area={property.buildingArea}
+                      priceNumeric={property.price}
+                      link={`/properti/${property.slug}`}
+                      status={property.status}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-12">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={currentPage <= 1}
+                      onClick={() => {
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.set("page", (currentPage - 1).toString());
+                        router.push(`/properti?${params.toString()}`);
+                      }}
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </Button>
+
+                    <div className="flex items-center gap-2 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar">
+                      {Array.from({ length: totalPages }).map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => {
+                            const params = new URLSearchParams(searchParams.toString());
+                            params.set("page", (i + 1).toString());
+                            router.push(`/properti?${params.toString()}`);
+                          }}
+                          className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-lg border font-semibold text-sm transition-colors ${
+                            currentPage === i + 1
+                              ? "bg-[#0B1528] border-[#0B1528] text-white pointer-events-none"
+                              : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={currentPage >= totalPages}
+                      onClick={() => {
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.set("page", (currentPage + 1).toString());
+                        router.push(`/properti?${params.toString()}`);
+                      }}
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">

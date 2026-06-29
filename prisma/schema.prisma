@@ -51,6 +51,7 @@ model Property {
   certificate      String
   description      String          @db.Text
   viewCount        Int             @default(0)
+  whatsappClicks   Int             @default(0)
   virtualTourData  Json?
   videoUrl         String?
   featuredImage    String?

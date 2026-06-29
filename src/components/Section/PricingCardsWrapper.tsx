@@ -7,10 +7,12 @@ import OrderPackageModal, { AddonType } from "./OrderPackageModal";
 
 export default function PricingCardsWrapper({ 
   pricingPlans, 
-  addons 
+  addons,
+  whatsappNumber
 }: { 
   pricingPlans: any[];
   addons: AddonType[];
+  whatsappNumber?: string;
 }) {
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
 
@@ -89,6 +91,7 @@ export default function PricingCardsWrapper({
         onClose={() => setSelectedPlan(null)}
         selectedPlan={selectedPlan}
         addons={addons}
+        whatsappNumber={whatsappNumber}
       />
     </>
   );

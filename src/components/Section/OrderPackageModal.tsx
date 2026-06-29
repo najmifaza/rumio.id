@@ -20,13 +20,15 @@ interface OrderPackageModalProps {
     price: number;
   } | null;
   addons?: AddonType[]; // Pass available addons from parent or fetch them
+  whatsappNumber?: string;
 }
 
 export default function OrderPackageModal({
   isOpen,
   onClose,
   selectedPlan,
-  addons = []
+  addons = [],
+  whatsappNumber = ""
 }: OrderPackageModalProps) {
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
@@ -77,7 +79,9 @@ export default function OrderPackageModal({
         
         const message = `Halo Tim Rumio,\n\nSaya ${customerName} telah melakukan pemesanan *Paket ${selectedPlan.name}* untuk properti tipe *${propertyType}*.\nTotal Bayar: Rp ${totalPrice.toLocaleString("id-ID")}\nMetode: ${paymentMethod}\n\nMohon segera diproses ya.`;
         
-        const waUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
+        const waUrl = whatsappNumber 
+          ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
+          : `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
         
         // Reset form & close
         setSelectedAddons([]);

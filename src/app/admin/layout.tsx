@@ -19,20 +19,13 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  // Hitung jumlah inquiry baru
-  const newInquiriesCount = await prisma.inquiry.count({
-    where: { status: "NEW" },
-  });
+  const userRole = session.user.role;
+  const isAdmin = userRole === "ADMIN";
 
-  // Hitung jumlah pendaftar scout baru
-  const newScoutsCount = await prisma.propertyScout.count({
-    where: { status: "NEW" },
-  });
-
-  // Hitung jumlah pesanan baru
-  const newOrdersCount = await prisma.packageOrder.count({
-    where: { status: "PENDING" },
-  });
+  // Hitung jumlah inbox — hanya untuk Admin Utama
+  const newInquiriesCount = isAdmin ? await prisma.inquiry.count({ where: { status: "NEW" } }) : 0;
+  const newScoutsCount = isAdmin ? await prisma.propertyScout.count({ where: { status: "NEW" } }) : 0;
+  const newOrdersCount = isAdmin ? await prisma.packageOrder.count({ where: { status: "PENDING" } }) : 0;
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-[#0B1528]">
@@ -49,6 +42,7 @@ export default async function AdminLayout({
             newInquiriesCount={newInquiriesCount}
             newScoutsCount={newScoutsCount}
             newOrdersCount={newOrdersCount}
+            userRole={userRole}
           />
         </div>
 

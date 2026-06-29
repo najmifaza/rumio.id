@@ -1,8 +1,43 @@
 import { ArrowRight } from "lucide-react";
 import { servicesData } from "@/data/services";
 import { statsData } from "@/data/stats";
+import { prisma } from "@/lib/prisma";
 
-export default function Services() {
+export default async function Services() {
+  // Fetch real data from database
+  const activePropertiesCount = await prisma.property.count({ where: { status: "AVAILABLE" } });
+  
+  const viewsAggregate = await prisma.property.aggregate({ _sum: { viewCount: true } });
+  const totalViews = viewsAggregate._sum.viewCount || 0;
+
+  const inquiriesCount = await prisma.inquiry.count();
+  const ordersCount = await prisma.packageOrder.count();
+  const scoutsCount = await prisma.propertyScout.count();
+  const totalLeads = inquiriesCount + ordersCount + scoutsCount;
+
+  const distinctLocations = await prisma.property.findMany({
+    select: { location: true },
+    distinct: ['location'],
+  });
+  
+  // Format numbers nicely (e.g. 1500 -> 1.5K)
+  const formatNumber = (num: number) => {
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K+';
+    return num.toString() + '+';
+  };
+
+  const dynamicStatsData = statsData.map((stat, index) => {
+    let newValue = stat.value;
+    if (index === 0) newValue = formatNumber(activePropertiesCount);
+    if (index === 1) newValue = formatNumber(totalViews);
+    if (index === 2) newValue = formatNumber(totalLeads);
+    if (index === 3) newValue = distinctLocations.length.toString() + '+';
+    
+    return {
+      ...stat,
+      value: newValue,
+    };
+  });
 
   return (
     <>
@@ -59,7 +94,7 @@ export default function Services() {
       {/* Stats Section */}
       <section className="w-full bg-[#0B1528] py-20 px-6 lg:px-12 xl:px-0 font-sans">
         <div className="max-w-[1080px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-0">
-          {statsData.map((stat, index) => (
+          {dynamicStatsData.map((stat, index) => (
             <div
               key={index}
               className={`group flex flex-col lg:px-10 hover:-translate-y-2 transition-all duration-300 cursor-pointer ${

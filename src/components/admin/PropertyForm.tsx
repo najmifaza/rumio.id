@@ -19,10 +19,14 @@ import type { MediaAssetType } from "./MediaGallery";
 
 type PropertyWithImages = Property & { images: PropertyImage[] };
 
+type OwnerOption = { id: string; name: string; email: string };
+
 export default function PropertyForm({
   initialData,
+  owners = [],
 }: {
   initialData?: PropertyWithImages;
+  owners?: OwnerOption[];
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -310,6 +314,29 @@ export default function PropertyForm({
                 </select>
               </div>
             </div>
+
+            {/* Assign ke Admin Properti */}
+            {owners.length > 0 && (
+              <div className="space-y-2.5 border-t border-slate-100 pt-4">
+                <label className="text-[13px] font-bold text-slate-700 flex items-center gap-2">
+                  <span className="bg-purple-100 text-purple-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full">ADMIN</span>
+                  Assign ke Admin Properti
+                </label>
+                <select
+                  name="ownerId"
+                  defaultValue={initialData?.ownerId || ""}
+                  className="w-full h-11 px-4 border border-slate-200 rounded-xl outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all text-sm bg-white"
+                >
+                  <option value="">-- Tidak di-assign (milik Admin Utama) --</option>
+                  {owners.map((owner) => (
+                    <option key={owner.id} value={owner.id}>
+                      {owner.name} ({owner.email})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-slate-400">Admin Properti yang dipilih akan bisa melihat properti ini di dashboard dan banner mereka.</p>
+              </div>
+            )}
           </div>
 
           {/* Spesifikasi Bangunan */}

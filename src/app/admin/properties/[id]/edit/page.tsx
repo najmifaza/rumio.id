@@ -2,18 +2,34 @@ import PropertyForm from "@/components/admin/PropertyForm";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await getServerSession(authOptions);
+
+  // Hanya ADMIN yang boleh edit properti
+  if (!session || session.user.role !== "ADMIN") {
+    redirect("/admin/properties");
+  }
+
   const { id } = await params;
   const property = await prisma.property.findUnique({
     where: { id },
-    include: { images: true }
+    include: { images: true },
   });
 
   if (!property) {
     notFound();
   }
+
+  // Ambil semua OWNER untuk dropdown assign
+  const owners = await prisma.user.findMany({
+    where: { role: "OWNER" },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: "asc" },
+  });
 
   return (
     <div>
@@ -26,7 +42,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         <p className="text-slate-500 font-medium">Perbarui informasi untuk properti {property.title}</p>
       </div>
 
-      <PropertyForm initialData={property} />
+      <PropertyForm initialData={property} owners={owners} />
     </div>
   );
 }

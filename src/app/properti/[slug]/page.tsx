@@ -17,6 +17,8 @@ import ImageGallery from "@/components/ui/image-gallery";
 import Icon360 from "@/components/ui/Icon360";
 import VirtualTourViewer, { VirtualTourData } from "@/components/ui/VirtualTourViewer";
 import { formatPriceFull, formatKPREstimate } from "@/lib/format";
+import { getSettings } from "@/app/admin/settings/actions";
+import WhatsAppBookingButton from "@/components/WhatsAppBookingButton";
 
 export default async function PropertyDetailPage({
   params,
@@ -24,6 +26,9 @@ export default async function PropertyDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  const { data: settings } = await getSettings(["contact_whatsapp"]);
+  const waNumber = settings?.contact_whatsapp?.replace(/[^0-9]/g, "") || "";
 
   // Fetch from database
   const property = await prisma.property.findUnique({
@@ -210,10 +215,15 @@ export default async function PropertyDetailPage({
                   <p className="text-slate-600 leading-relaxed text-sm md:text-base">
                     Properti ini belum memiliki Virtual Tour. Hubungi kami untuk meminta preview 360° untuk properti ini.
                   </p>
-                  <Button className="bg-[#0B1528] hover:bg-[#16294a] text-white gap-2 h-12 px-6 rounded-xl font-semibold w-full sm:w-auto mt-2">
+                  <a 
+                    href={waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(`Halo Admin Rumio, saya tertarik dengan properti ${property.title} dan ingin info lebih lanjut tentang Request 360 Tour.`)}` : "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex bg-[#0B1528] hover:bg-[#16294a] text-white gap-2 items-center justify-center h-12 px-6 rounded-xl font-semibold w-full sm:w-auto mt-2"
+                  >
                     <Icon360 className="w-7 h-7 text-white mr-2" />
                     Request 360° Tour
-                  </Button>
+                  </a>
                 </div>
                 <div className="w-full md:w-[50%] lg:w-[55%] aspect-video md:aspect-2/1 bg-black rounded-xl overflow-hidden relative shadow-inner shrink-0">
                   <img
@@ -382,9 +392,12 @@ export default async function PropertyDetailPage({
                 </div>
 
                 <div className="space-y-4">
-                  <Button className="w-full h-14 text-base font-bold bg-[#EAB308] hover:bg-[#CA8A04] text-white shadow-lg shadow-amber-500/20 rounded-xl transition-all">
-                    Booking Sekarang
-                  </Button>
+                  <WhatsAppBookingButton 
+                    waLink={waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(`Halo Admin Rumio, saya tertarik untuk melakukan booking properti ${property.title} seharga ${formatPriceFull(property.price)}. Mohon info lebih lanjut.`)}` : "#"}
+                    propertySlug={property.slug}
+                    propertyTitle={property.title}
+                    priceFormatted={formatPriceFull(property.price)}
+                  />
                   <div className="flex items-center justify-center gap-2 text-sm text-slate-500 font-medium">
                     <ShieldCheck className="w-4 h-4" />
                     <span>Aman & Terpercaya</span>
