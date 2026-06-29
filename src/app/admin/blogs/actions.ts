@@ -3,11 +3,20 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-// 🛡️ TODO: Implementasikan fungsi otorisasi di sini (contoh: requireAdmin())
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") {
+    throw new Error("Akses ditolak. Hanya Admin Utama yang dapat melakukan tindakan ini.");
+  }
+  return session;
+}
 
 export async function deleteBlog(id: string) {
   try {
-    // await requireAdmin(); // 🔒 Aktifkan jika sistem Auth sudah siap
+    await requireAdmin();
 
     if (!id || typeof id !== "string") {
       return { success: false, error: "ID Blog tidak valid." };
@@ -28,7 +37,7 @@ export async function deleteBlog(id: string) {
 
 export async function saveBlog(formData: FormData, id?: string) {
   try {
-    // await requireAdmin(); // 🔒 Aktifkan jika sistem Auth sudah siap
+    await requireAdmin();
 
     const title = formData.get("title")?.toString().trim();
     const category = formData.get("category")?.toString().trim();

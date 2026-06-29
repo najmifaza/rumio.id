@@ -5,9 +5,20 @@ import { revalidatePath } from "next/cache";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import sharp from "sharp";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") {
+    throw new Error("Akses ditolak. Hanya Admin Utama yang dapat melakukan tindakan ini.");
+  }
+  return session;
+}
 
 export async function uploadMedia(formData: FormData) {
   try {
+    await requireAdmin();
     const file = formData.get("file") as File;
     if (!file) {
       return { success: false, error: "Tidak ada file yang diunggah" };
@@ -62,6 +73,7 @@ export async function uploadMedia(formData: FormData) {
 
 export async function deleteMedia(id: string) {
   try {
+    await requireAdmin();
     const asset = await prisma.mediaAsset.findUnique({ where: { id } });
     if (!asset) return { success: false, error: "File tidak ditemukan" };
 
@@ -86,6 +98,7 @@ export async function deleteMedia(id: string) {
 
 export async function getMediaAssets() {
   try {
+    await requireAdmin();
     const assets = await prisma.mediaAsset.findMany({
       orderBy: { createdAt: "desc" }
     });

@@ -2,9 +2,20 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") {
+    throw new Error("Akses ditolak. Hanya Admin Utama yang dapat melakukan tindakan ini.");
+  }
+  return session;
+}
 
 export async function saveAddon(formData: FormData, id?: string) {
   try {
+    await requireAdmin();
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const priceStr = formData.get("price") as string;
@@ -49,6 +60,7 @@ export async function saveAddon(formData: FormData, id?: string) {
 
 export async function deleteAddon(id: string) {
   try {
+    await requireAdmin();
     await prisma.addonPlan.delete({
       where: { id },
     });
@@ -62,6 +74,7 @@ export async function deleteAddon(id: string) {
 
 export async function savePlan(formData: FormData, id?: string) {
   try {
+    await requireAdmin();
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const priceStr = formData.get("price") as string;
