@@ -33,24 +33,24 @@ export default async function PropertiesPage({
   }
 
   if (typeof resolvedParams.minPrice === "string" && resolvedParams.minPrice) {
-    where.price = { ...where.price, gte: parseFloat(resolvedParams.minPrice) };
+    where.price = { ...(typeof where.price === 'object' ? where.price : {}), gte: parseFloat(resolvedParams.minPrice) };
   }
   if (typeof resolvedParams.maxPrice === "string" && resolvedParams.maxPrice) {
-    where.price = { ...where.price, lte: parseFloat(resolvedParams.maxPrice) };
+    where.price = { ...(typeof where.price === 'object' ? where.price : {}), lte: parseFloat(resolvedParams.maxPrice) };
   }
 
   if (typeof resolvedParams.minArea === "string" && resolvedParams.minArea) {
-    where.buildingArea = { ...where.buildingArea, gte: parseFloat(resolvedParams.minArea) };
+    where.buildingArea = { ...(typeof where.buildingArea === 'object' ? where.buildingArea : {}), gte: parseFloat(resolvedParams.minArea) };
   }
   if (typeof resolvedParams.maxArea === "string" && resolvedParams.maxArea) {
-    where.buildingArea = { ...where.buildingArea, lte: parseFloat(resolvedParams.maxArea) };
+    where.buildingArea = { ...(typeof where.buildingArea === 'object' ? where.buildingArea : {}), lte: parseFloat(resolvedParams.maxArea) };
   }
 
   if (typeof resolvedParams.minLand === "string" && resolvedParams.minLand) {
-    where.landArea = { ...where.landArea, gte: parseFloat(resolvedParams.minLand) };
+    where.landArea = { ...(typeof where.landArea === 'object' ? where.landArea : {}), gte: parseFloat(resolvedParams.minLand) };
   }
   if (typeof resolvedParams.maxLand === "string" && resolvedParams.maxLand) {
-    where.landArea = { ...where.landArea, lte: parseFloat(resolvedParams.maxLand) };
+    where.landArea = { ...(typeof where.landArea === 'object' ? where.landArea : {}), lte: parseFloat(resolvedParams.maxLand) };
   }
 
   if (typeof resolvedParams.beds === "string" && resolvedParams.beds) {

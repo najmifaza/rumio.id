@@ -51,7 +51,7 @@ export default async function AdminDashboard({
   });
 
   // Calculate leads chart data (last 6 months) for ADMIN
-  let leadsChartData: { name: string; inquiries: number; scouts: number; orders: number }[] = [];
+  let leadsChartData: { name: string; month: number; year: number; inquiries: number; scouts: number; orders: number }[] = [];
   
   if (isAdmin) {
     const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
