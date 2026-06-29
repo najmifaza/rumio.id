@@ -1,5 +1,9 @@
 import { Metadata } from "next";
 import HeroTentangKami from "@/components/Section/HeroTentangKami";
+import KisahRumio from "@/components/Section/KisahRumio";
+import StatistikRumio from "@/components/Section/StatistikRumio";
+import CtaRumio from "@/components/Section/CtaRumio";
+import VisiMisi from "@/components/Section/VisiMisi";
 
 export const metadata: Metadata = {
   title: "Tentang Kami | Rumio.id",
@@ -22,9 +26,12 @@ export const metadata: Metadata = {
 
 export default function TentangKamiPage() {
   return (
-    <main className="min-h-screen bg-slate-50 flex flex-col">
+    <main className="min-h-screen bg-slate-50 flex flex-col pb-20">
       <HeroTentangKami />
-      {/* Tambahan section lain untuk halaman Tentang Kami bisa diletakkan di sini */}
+      <VisiMisi />
+      <KisahRumio />
+      <StatistikRumio />
+      <CtaRumio />
     </main>
   );
 }

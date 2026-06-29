@@ -103,15 +103,15 @@ export default function OrderPackageModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-3xl w-full max-w-3xl h-[90vh] max-h-[800px] overflow-hidden flex flex-col shadow-2xl">
+      <div className="relative bg-white w-full max-w-3xl rounded-t-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh] sm:max-h-[800px] animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
           <div>
@@ -213,20 +213,20 @@ export default function OrderPackageModal({
                 <div 
                   onClick={() => setPaymentMethod("QRIS")}
                   className={`cursor-pointer p-4 rounded-xl border-2 flex items-center gap-3 transition-all ${
-                    paymentMethod === "QRIS" ? "border-amber-500 bg-amber-50/50" : "border-slate-100 hover:border-slate-200 bg-white"
+                    paymentMethod === "QRIS" ? "border-amber-500 bg-amber-50/50" : "border-slate-200 hover:border-slate-300 bg-white"
                   }`}
                 >
-                  <QrCode className="w-6 h-6 text-slate-400" />
-                  <span className="font-bold text-sm">QRIS</span>
+                  <QrCode className={`w-6 h-6 ${paymentMethod === "QRIS" ? "text-amber-600" : "text-slate-500"}`} />
+                  <span className={`font-bold text-sm ${paymentMethod === "QRIS" ? "text-amber-700" : "text-slate-700"}`}>QRIS</span>
                 </div>
                 <div 
                   onClick={() => setPaymentMethod("BCA")}
                   className={`cursor-pointer p-4 rounded-xl border-2 flex items-center gap-3 transition-all ${
-                    paymentMethod === "BCA" ? "border-amber-500 bg-amber-50/50" : "border-slate-100 hover:border-slate-200 bg-white"
+                    paymentMethod === "BCA" ? "border-amber-500 bg-amber-50/50" : "border-slate-200 hover:border-slate-300 bg-white"
                   }`}
                 >
-                  <CreditCard className="w-6 h-6 text-slate-400" />
-                  <span className="font-bold text-sm">Transfer BCA</span>
+                  <CreditCard className={`w-6 h-6 ${paymentMethod === "BCA" ? "text-amber-600" : "text-slate-500"}`} />
+                  <span className={`font-bold text-sm ${paymentMethod === "BCA" ? "text-amber-700" : "text-slate-700"}`}>Transfer BCA</span>
                 </div>
               </div>
 

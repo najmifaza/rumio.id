@@ -2,8 +2,15 @@ import { ArrowRight } from "lucide-react";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getSettings } from "@/app/admin/settings/actions";
 
-export default function HeroTentangKami() {
+export default async function HeroTentangKami() {
+  const { data } = await getSettings(["contact_whatsapp"]);
+  const waNumberRaw = data?.contact_whatsapp || "";
+  const waNumber = waNumberRaw.replace(/[^0-9]/g, "");
+  
+  const waText = encodeURIComponent("Halo Admin Rumio, saya ingin berdiskusi lebih lanjut tentang layanan dari Rumio.id.");
+  const waLink = waNumber ? `https://wa.me/${waNumber}?text=${waText}` : "#";
   return (
     <section className="relative w-full h-[500px] md:h-[550px] lg:h-[600px] flex items-center overflow-hidden bg-white pt-20">
       {/* Background Image Container */}
@@ -39,10 +46,15 @@ export default function HeroTentangKami() {
             Rumio adalah platform visualisasi dan pemasaran properti berbasis teknologi yang membantu pemilik, agen, dan developer menampilkan properti secara profesional melalui foto premium, virtual tour 360°, landing page eksklusif, hingga integrasi WhatsApp.
           </p>
 
-          <Link href="/kontak">
-            <Button className="bg-[#0B1528] hover:bg-[#1a2b4c] text-white px-8 py-6 rounded-xl font-bold text-base h-auto">
-              Hubungi Kami
-              <ArrowRight className="w-5 h-5 ml-2" />
+          <Link href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex">
+            <Button
+              size="hero"
+              className="inline-flex gap-1.5 sm:gap-2 shadow-lg shadow-slate-900/20"
+            >
+              <span className="text-center leading-tight">
+                Hubungi Kami
+              </span>
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
             </Button>
           </Link>
         </div>
