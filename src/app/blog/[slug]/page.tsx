@@ -1,4 +1,5 @@
 import { getBlogData, getAllBlogs } from "@/lib/blog";
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
 import CtaHelpCard from "@/components/ui/cta-help-card";
@@ -7,10 +8,53 @@ import Link from "next/link";
 
 // This allows Next.js to generate static pages for each blog
 export async function generateStaticParams() {
-  const blogs = await getAllBlogs();
+  const { data: blogs } = await getAllBlogs({ limit: 1000 });
   return blogs.map((blog) => ({
     slug: blog.slug,
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const blog = await getBlogData(slug);
+
+  if (!blog) {
+    return {
+      title: "Artikel Tidak Ditemukan | Rumio.id",
+    };
+  }
+
+  const title = `${blog.title} | Rumio.id Blog`;
+  const url = `https://rumio.id/blog/${blog.slug}`;
+
+  return {
+    title,
+    description: blog.description,
+    openGraph: {
+      title,
+      description: blog.description,
+      url,
+      type: "article",
+      images: [
+        {
+          url: blog.image,
+          width: 1200,
+          height: 630,
+          alt: blog.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: blog.description,
+      images: [blog.image],
+    },
+  };
 }
 
 export default async function BlogDetailPage({
@@ -26,7 +70,7 @@ export default async function BlogDetailPage({
   }
 
   // Ambil semua artikel untuk kebutuhan artikel terkait dan populer
-  const allBlogs = await getAllBlogs();
+  const { data: allBlogs } = await getAllBlogs({ limit: 10 });
 
   // Artikel Terkait: kategori sama, kecualikan artikel aktif saat ini
   let relatedPosts = allBlogs.filter(

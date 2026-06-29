@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   Bed,
@@ -19,6 +20,58 @@ import VirtualTourViewer, { VirtualTourData } from "@/components/ui/VirtualTourV
 import { formatPriceFull, formatKPREstimate } from "@/lib/format";
 import { getSettings } from "@/app/admin/settings/actions";
 import WhatsAppBookingButton from "@/components/WhatsAppBookingButton";
+
+const stripHtml = (html: string) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const property = await prisma.property.findUnique({
+    where: { slug },
+  });
+
+  if (!property) {
+    return {
+      title: "Properti Tidak Ditemukan | Rumio.id",
+    };
+  }
+
+  const title = `${property.title} | Rumio.id`;
+  const description = stripHtml(property.description).substring(0, 150) + "...";
+  const image = property.featuredImage || "https://rumio.id/og-image.jpg";
+  const url = `https://rumio.id/properti/${property.slug}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: property.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
 
 export default async function PropertyDetailPage({
   params,
