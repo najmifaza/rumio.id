@@ -1,14 +1,22 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { Building2, Eye, FileText, Users } from "lucide-react";
+import { Building2, Eye, FileText, Users, TrendingUp } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import LeadsChart from "@/components/admin/LeadsChart";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const session = await getServerSession(authOptions);
   const isAdmin = session?.user?.role === "ADMIN";
   const userId = session?.user?.id as string;
+
+  const resolvedParams = await searchParams;
+  const range = typeof resolvedParams.range === "string" ? parseInt(resolvedParams.range) : 6;
 
   // Kondisi filter: ADMIN lihat semua, OWNER hanya miliknya
   const propertyWhere = isAdmin ? {} : { ownerId: userId };
@@ -41,6 +49,52 @@ export default async function AdminDashboard() {
       owner: { select: { name: true } },
     },
   });
+
+  // Calculate leads chart data (last 6 months) for ADMIN
+  let leadsChartData: { name: string; inquiries: number; scouts: number; orders: number }[] = [];
+  
+  if (isAdmin) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+    const currentMonth = new Date().getMonth();
+    
+    // Initialize chart data with 0s for the last 'range' months
+    leadsChartData = Array.from({ length: range }).map((_, i) => {
+      const d = new Date();
+      d.setMonth(currentMonth - (range - 1) + i);
+      return {
+        name: months[(d.getMonth() + 12) % 12],
+        month: (d.getMonth() + 12) % 12,
+        year: d.getFullYear(),
+        inquiries: 0,
+        scouts: 0,
+        orders: 0,
+      };
+    });
+
+    const startDate = new Date();
+    startDate.setMonth(currentMonth - (range - 1));
+    startDate.setDate(1);
+    startDate.setHours(0, 0, 0, 0);
+
+    const [inquiries, scouts, orders] = await Promise.all([
+      prisma.inquiry.findMany({ where: { createdAt: { gte: startDate } }, select: { createdAt: true } }),
+      prisma.propertyScout.findMany({ where: { createdAt: { gte: startDate } }, select: { createdAt: true } }),
+      prisma.packageOrder.findMany({ where: { createdAt: { gte: startDate } }, select: { createdAt: true } }),
+    ]);
+
+    inquiries.forEach(i => {
+      const match = leadsChartData.find(d => d.month === i.createdAt.getMonth() && d.year === i.createdAt.getFullYear());
+      if (match) match.inquiries += 1;
+    });
+    scouts.forEach(s => {
+      const match = leadsChartData.find(d => d.month === s.createdAt.getMonth() && d.year === s.createdAt.getFullYear());
+      if (match) match.scouts += 1;
+    });
+    orders.forEach(o => {
+      const match = leadsChartData.find(d => d.month === o.createdAt.getMonth() && d.year === o.createdAt.getFullYear());
+      if (match) match.orders += 1;
+    });
+  }
 
   const adminStats = [
     { label: "Total Properti", value: totalProperties.toString(), icon: Building2, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
@@ -84,13 +138,21 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      {/* Properti Terbaru */}
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
-        <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-          <h2 className="text-xl font-bold text-[#0B1528]">
-            {isAdmin ? "Properti Terbaru" : "Properti Anda"}
-          </h2>
-        </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
+        {/* Leads Chart */}
+        {isAdmin && (
+          <div className="xl:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm p-6 lg:p-8 flex flex-col">
+            <LeadsChart data={leadsChartData} currentRange={range} />
+          </div>
+        )}
+
+        {/* Properti Terbaru */}
+        <div className={`${isAdmin ? "xl:col-span-1" : "xl:col-span-3"} bg-white rounded-3xl border border-slate-100 shadow-sm p-6 lg:p-8 flex flex-col`}>
+          <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+            <h2 className="text-xl font-bold text-[#0B1528]">
+              {isAdmin ? "Properti Terbaru" : "Properti Anda"}
+            </h2>
+          </div>
 
         {recentProperties.length === 0 ? (
           <div className="text-center py-12 text-slate-400 flex flex-col items-center">
@@ -126,6 +188,7 @@ export default async function AdminDashboard() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
