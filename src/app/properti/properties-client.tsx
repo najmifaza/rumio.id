@@ -9,7 +9,7 @@ import Breadcrumbs from "@/components/ui/breadcrumbs";
 import { Property } from "@prisma/client";
 
 interface PropertiesClientProps {
-  initialProperties: Property[];
+  initialProperties: Pick<Property, "slug" | "featuredImage" | "title" | "location" | "bedrooms" | "bathrooms" | "buildingArea" | "price" | "status">[];
   totalProperties: number;
   totalPages: number;
   currentPage: number;

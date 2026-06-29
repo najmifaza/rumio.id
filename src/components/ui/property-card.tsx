@@ -37,7 +37,7 @@ export default function PropertyCard({
       {/* Image */}
       <div className="relative h-52 overflow-hidden shrink-0">
         <img
-          src={image}
+          src={image.includes("unsplash.com") && !image.includes("?") ? `${image}?w=600&q=80&fm=webp` : image}
           alt={title}
           className={`w-full h-full object-cover transition-transform duration-500 ${!isSold && 'group-hover:scale-105'}`}
         />

@@ -63,6 +63,17 @@ export default async function PropertiesPage({
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
+      select: {
+        slug: true,
+        featuredImage: true,
+        title: true,
+        location: true,
+        bedrooms: true,
+        bathrooms: true,
+        buildingArea: true,
+        price: true,
+        status: true,
+      }
     }),
     prisma.property.count({ where }),
   ]);
