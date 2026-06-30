@@ -2,9 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth";
 
 export async function deleteInquiry(id: string) {
   try {
+    await requireAdmin();
     await prisma.inquiry.delete({
       where: { id },
     });
@@ -19,6 +21,13 @@ export async function deleteInquiry(id: string) {
 
 export async function updateInquiryStatus(id: string, status: string) {
   try {
+    await requireAdmin();
+    
+    const validStatuses = ["NEW", "CONTACTED", "DONE"];
+    if (!validStatuses.includes(status)) {
+      return { success: false, error: "Status tidak valid" };
+    }
+
     await prisma.inquiry.update({
       where: { id },
       data: { status },

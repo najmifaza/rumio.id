@@ -2,6 +2,27 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { DefaultUser } from "next-auth";
+import { DefaultJWT } from "next-auth/jwt";
+
+declare module "next-auth" {
+  interface User extends DefaultUser {
+    role: string;
+  }
+  interface Session {
+    user: User & {
+      id: string;
+      role: string;
+    };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    id: string;
+    role: string;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -45,15 +66,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // @ts-ignore
         token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
+        session.user.id = token.id;
+        session.user.role = token.role;
       }
       return session;
     }
@@ -66,3 +86,13 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+import { getServerSession } from "next-auth";
+
+export async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "ADMIN") {
+    throw new Error("Akses ditolak. Hanya Admin Utama yang dapat melakukan tindakan ini.");
+  }
+  return session;
+}

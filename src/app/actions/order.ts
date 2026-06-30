@@ -1,14 +1,23 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
+import { requireAdmin } from "@/lib/auth";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import sharp from "sharp";
+import { headers } from "next/headers";
+import { formLimiter } from "@/lib/rate-limit";
 
 export async function submitPackageOrder(formData: FormData) {
   try {
+    // Rate limiting: max 5 per minute per IP
+    const headersList = await headers();
+    const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateCheck = formLimiter.check(`order:${ip}`);
+    if (!rateCheck.allowed) {
+      return { success: false, error: "Terlalu banyak permintaan. Silakan coba lagi nanti." };
+    }
+
     const planId = formData.get("planId") as string;
     const planName = formData.get("planName") as string;
     const customerName = formData.get("customerName") as string;
@@ -20,8 +29,19 @@ export async function submitPackageOrder(formData: FormData) {
     const addonsJson = formData.get("addons") as string;
     const file = formData.get("proofOfPayment") as File;
 
-    if (!file) {
+    if (!file || file.size === 0) {
       return { success: false, error: "Bukti pembayaran wajib diunggah." };
+    }
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+    if (file.size > MAX_FILE_SIZE) {
+      return { success: false, error: "Ukuran file maksimal 10MB." };
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return { success: false, error: "Format file tidak didukung. Harap unggah gambar (JPG, PNG, WEBP)." };
     }
 
     // Process file upload
@@ -82,9 +102,11 @@ export async function submitPackageOrder(formData: FormData) {
 
 export async function updateOrderStatus(id: string, status: string) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ADMIN") {
-      return { success: false, error: "Unauthorized" };
+    await requireAdmin();
+
+    const VALID_STATUSES = ["PENDING", "CONFIRMED", "REJECTED"];
+    if (!VALID_STATUSES.includes(status)) {
+      return { success: false, error: "Status tidak valid" };
     }
 
     await prisma.packageOrder.update({
@@ -99,9 +121,12 @@ export async function updateOrderStatus(id: string, status: string) {
 
 export async function deleteOrder(id: string) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ADMIN") {
-      return { success: false, error: "Unauthorized" };
+    await requireAdmin();
+
+    const order = await prisma.packageOrder.findUnique({ where: { id } });
+    if (order?.proofUrl) {
+      const filePath = join(process.cwd(), "public", order.proofUrl);
+      try { await unlink(filePath); } catch (e) { console.error("Failed to delete order proof:", e); }
     }
 
     await prisma.packageOrder.delete({

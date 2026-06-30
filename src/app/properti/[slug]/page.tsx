@@ -51,7 +51,7 @@ export async function generateMetadata({
 
   const title = `${property.title} | Rumio.id`;
   const description = stripHtml(property.description).substring(0, 150) + "...";
-  const image = property.featuredImage || "https://rumio.id/og-image.jpg";
+  const image = property.featuredImage || "https://rumio.id/og-image.webp";
   const url = `https://rumio.id/properti/${property.slug}`;
 
   return {

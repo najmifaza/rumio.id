@@ -1,18 +1,29 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth";
+
+const ALLOWED_KEYS = [
+  "general_office_address",
+  "contact_whatsapp",
+  "contact_email",
+  "contact_hours",
+  "social_instagram",
+  "social_facebook",
+  "social_tiktok",
+  "social_youtube",
+];
 
 export async function saveSettings(data: Record<string, string>) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
-      throw new Error("Unauthorized: Hanya Admin yang dapat mengubah pengaturan.");
-    }
+    await requireAdmin();
 
-    const updates = Object.entries(data).map(async ([key, value]) => {
+    const filtered = Object.fromEntries(
+      Object.entries(data).filter(([key]) => ALLOWED_KEYS.includes(key))
+    );
+
+    const updates = Object.entries(filtered).map(async ([key, value]) => {
       return prisma.setting.upsert({
         where: { key },
         update: { value },
@@ -26,9 +37,9 @@ export async function saveSettings(data: Record<string, string>) {
     revalidatePath("/", "layout");
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to save settings:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: "Gagal menyimpan pengaturan" };
   }
 }
 

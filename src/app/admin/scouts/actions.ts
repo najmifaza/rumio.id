@@ -2,9 +2,17 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth";
 
 export async function updateScoutStatus(id: string, status: string) {
   try {
+    await requireAdmin();
+
+    const validStatuses = ["NEW", "CONTACTED", "ACCEPTED", "REJECTED"];
+    if (!validStatuses.includes(status)) {
+      return { success: false, error: "Status tidak valid" };
+    }
+
     await prisma.propertyScout.update({
       where: { id },
       data: { status },
@@ -19,6 +27,7 @@ export async function updateScoutStatus(id: string, status: string) {
 
 export async function deleteScout(id: string) {
   try {
+    await requireAdmin();
     await prisma.propertyScout.delete({
       where: { id },
     });

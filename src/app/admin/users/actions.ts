@@ -1,19 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
-
-// Helper: pastikan hanya ADMIN utama yang bisa akses
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    throw new Error("Akses ditolak. Hanya Admin Utama yang dapat melakukan tindakan ini.");
-  }
-  return session;
-}
 
 // Ambil semua user (ADMIN & OWNER)
 export async function getUsers() {

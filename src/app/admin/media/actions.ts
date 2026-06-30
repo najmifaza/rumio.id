@@ -5,23 +5,26 @@ import { revalidatePath } from "next/cache";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import sharp from "sharp";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== "ADMIN") {
-    throw new Error("Akses ditolak. Hanya Admin Utama yang dapat melakukan tindakan ini.");
-  }
-  return session;
-}
 
 export async function uploadMedia(formData: FormData) {
   try {
     await requireAdmin();
     const file = formData.get("file") as File;
-    if (!file) {
+    if (!file || file.size === 0) {
       return { success: false, error: "Tidak ada file yang diunggah" };
+    }
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf', 'video/mp4'];
+
+    if (file.size > MAX_FILE_SIZE) {
+      return { success: false, error: "Ukuran file maksimal 10MB" };
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return { success: false, error: "Format file tidak didukung" };
     }
 
     const bytes = await file.arrayBuffer();

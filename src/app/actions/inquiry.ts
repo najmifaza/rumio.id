@@ -23,6 +23,10 @@ export async function submitInquiry(data: {
       return { success: false, error: "Terlalu banyak permintaan. Silakan coba lagi dalam 1 menit." };
     }
 
+    if (!data.name?.trim() || !data.phone?.trim() || !data.type?.trim()) {
+      return { success: false, error: "Nama, nomor telepon, dan tipe permintaan wajib diisi." };
+    }
+
     const inquiry = await prisma.inquiry.create({
       data: {
         type: data.type,

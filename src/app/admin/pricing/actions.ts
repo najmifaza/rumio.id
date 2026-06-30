@@ -2,16 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== "ADMIN") {
-    throw new Error("Akses ditolak. Hanya Admin Utama yang dapat melakukan tindakan ini.");
-  }
-  return session;
-}
+import { requireAdmin } from "@/lib/auth";
 
 export async function saveAddon(formData: FormData, id?: string) {
   try {

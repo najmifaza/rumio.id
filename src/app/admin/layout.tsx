@@ -22,10 +22,13 @@ export default async function AdminLayout({
   const userRole = session.user.role;
   const isAdmin = userRole === "ADMIN";
 
-  // Hitung jumlah inbox — hanya untuk Admin Utama
-  const newInquiriesCount = isAdmin ? await prisma.inquiry.count({ where: { status: "NEW" } }) : 0;
-  const newScoutsCount = isAdmin ? await prisma.propertyScout.count({ where: { status: "NEW" } }) : 0;
-  const newOrdersCount = isAdmin ? await prisma.packageOrder.count({ where: { status: "PENDING" } }) : 0;
+  const [newInquiriesCount, newScoutsCount, newOrdersCount] = isAdmin 
+    ? await Promise.all([
+        prisma.inquiry.count({ where: { status: "NEW" } }),
+        prisma.propertyScout.count({ where: { status: "NEW" } }),
+        prisma.packageOrder.count({ where: { status: "PENDING" } })
+      ])
+    : [0, 0, 0];
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-[#0B1528]">

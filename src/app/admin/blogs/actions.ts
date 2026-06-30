@@ -3,16 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== "ADMIN") {
-    throw new Error("Akses ditolak. Hanya Admin Utama yang dapat melakukan tindakan ini.");
-  }
-  return session;
-}
+import { requireAdmin } from "@/lib/auth";
+import { sanitizeBlogContent } from "@/lib/sanitize";
 
 export async function deleteBlog(id: string) {
   try {
@@ -71,7 +63,7 @@ export async function saveBlog(formData: FormData, id?: string) {
       title,
       slug,
       category,
-      content,
+      content: sanitizeBlogContent(content),
       author,
       featuredImage,
     };

@@ -3,22 +3,41 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
 import sharp from 'sharp';
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, requireAdmin } from "@/lib/auth";
 
 export async function deleteProperty(id: string) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
+    const property = await prisma.property.findUnique({ 
+      where: { id },
+      include: { images: true }
+    });
+
+    if (!property) return { success: false, error: "Properti tidak ditemukan" };
+
     // Cek kepemilikan jika bukan Admin Utama
     if (session.user.role !== "ADMIN") {
-      const property = await prisma.property.findUnique({ where: { id } });
-      if (!property || property.ownerId !== session.user.id) {
+      if (property.ownerId !== session.user.id) {
         return { success: false, error: "Anda tidak memiliki izin untuk menghapus properti ini." };
+      }
+    }
+
+    // Hapus file fisik
+    const filesToDelete = [...property.images.map(img => img.imageUrl)];
+    if (property.featuredImage && !filesToDelete.includes(property.featuredImage)) {
+      filesToDelete.push(property.featuredImage);
+    }
+    
+    for (const url of filesToDelete) {
+      if (url.startsWith("/uploads/")) {
+        const filePath = join(process.cwd(), "public", url);
+        try { await unlink(filePath); } catch (e) {}
       }
     }
 
@@ -61,6 +80,8 @@ async function handleImageUpload(file: File | null) {
 
 export async function saveProperty(formData: FormData, id?: string) {
   try {
+    const session = await requireAdmin();
+
     // Handle multiple images
     const imageCount = parseInt(formData.get("imageCount") as string) || 0;
     const finalImages: { url: string; caption: string | null }[] = [];
@@ -95,6 +116,7 @@ export async function saveProperty(formData: FormData, id?: string) {
     const baseSlug = slug;
     let counter = 1;
     while (true) {
+      if (counter > 100) throw new Error("Gagal membuat slug unik setelah 100 percobaan");
       const existing = await prisma.property.findUnique({ where: { slug } });
       // Tidak ada konflik, atau konflik dengan properti yang sedang diedit — slug aman dipakai
       if (!existing || existing.id === id) break;
@@ -181,12 +203,6 @@ export async function saveProperty(formData: FormData, id?: string) {
         })),
       });
     } else {
-      // ADMIN memilih pemilik properti melalui dropdown di form
-      const session = await getServerSession(authOptions);
-      if (!session?.user?.id || session.user.role !== "ADMIN") {
-        throw new Error("Unauthorized: Hanya Admin Utama yang bisa membuat properti.");
-      }
-
       // ownerId dari pilihan dropdown; fallback ke session.user.id jika kosong
       const formOwnerId = (formData.get("ownerId") as string) || session.user.id;
 
