@@ -42,7 +42,7 @@ export async function generateMetadata({
       type: "article",
       images: [
         {
-          url: blog.image,
+          url: blog.image.startsWith('http') ? blog.image : `https://rumio.id${blog.image}`,
           width: 1200,
           height: 630,
           alt: blog.title,
