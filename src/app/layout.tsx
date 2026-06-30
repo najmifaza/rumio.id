@@ -18,22 +18,24 @@ const geistMono = Geist_Mono({
 import { getSettings } from "@/app/admin/settings/actions";
 
 export const metadata: Metadata = {
-  title: "Rumio.id | Platform Properti & Virtual Tour 360°",
+  title: "Rumio.id | Jual Beli Properti Purwokerto & Virtual Tour 360°",
   description:
-    "Temukan properti impian Anda dengan mudah melalui Rumio.id. Kami menyediakan layanan jual, beli, sewa properti, serta inovasi Virtual Tour 360° untuk pengalaman survei digital yang nyata.",
+    "Temukan properti impian Anda di Purwokerto dan Banyumas melalui Rumio.id. Kami menyediakan layanan jual beli, sewa rumah, dan perumahan baru dengan inovasi survei Virtual Tour 360°.",
   keywords: [
     "Rumio.id",
-    "Properti",
+    "Jual Beli Rumah Purwokerto",
+    "Properti Purwokerto",
+    "Perumahan Purwokerto",
     "Virtual Tour 360",
-    "Jual Beli Rumah",
-    "Sewa Properti",
-    "Agen Properti",
-    "Real Estate",
+    "Sewa Properti Banyumas",
+    "Agen Properti Purwokerto",
+    "Real Estate Banyumas",
+    "Rumah Dijual Purwokerto"
   ],
   openGraph: {
-    title: "Rumio.id | Platform Properti & Virtual Tour 360°",
+    title: "Rumio.id | Jual Beli Properti Purwokerto & Virtual Tour 360°",
     description:
-      "Temukan properti impian Anda dengan mudah melalui Rumio.id. Dilengkapi inovasi Virtual Tour 360° untuk pengalaman survei digital yang nyata.",
+      "Cari rumah, perumahan baru, atau properti komersial di Purwokerto. Dilengkapi fitur Virtual Tour 360° untuk pengalaman survei digital yang nyata.",
     url: "https://rumio.id",
     siteName: "Rumio.id",
     type: "website",
@@ -42,15 +44,15 @@ export const metadata: Metadata = {
         url: "https://rumio.id/og-image.webp", // Menggunakan gambar yang sudah ada di folder public
         width: 1200,
         height: 630,
-        alt: "Rumio.id - Platform Properti Terbaik",
+        alt: "Rumio.id - Platform Properti Terbaik Purwokerto",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rumio.id | Platform Properti & Virtual Tour 360°",
+    title: "Rumio.id | Jual Beli Properti Purwokerto",
     description:
-      "Temukan properti impian Anda dengan inovasi Virtual Tour 360° dari Rumio.id.",
+      "Cari rumah dan perumahan baru di Purwokerto dengan inovasi Virtual Tour 360° dari Rumio.id.",
     images: ["https://rumio.id/og-image.webp"],
   },
 };
