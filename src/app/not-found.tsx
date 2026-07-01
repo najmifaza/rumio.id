@@ -49,7 +49,7 @@ export default function NotFound() {
               </Link>
               
               <Link 
-                href="/properti?type=Dijual"
+                href="/properti?transaction=Dijual&page=1"
                 className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-transparent text-white border border-white/20 hover:bg-white/5 rounded-xl font-medium transition-all"
               >
                 <Search className="w-4 h-4" />
@@ -57,11 +57,11 @@ export default function NotFound() {
               </Link>
 
               <Link 
-                href="/properti?type=Disewa"
+                href="/properti?transaction=Disewakan&page=1"
                 className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-transparent text-white border border-white/20 hover:bg-white/5 rounded-xl font-medium transition-all"
               >
                 <Search className="w-4 h-4" />
-                Cari Properti Disewa
+                Cari Properti Disewakan
               </Link>
             </div>
           </div>
