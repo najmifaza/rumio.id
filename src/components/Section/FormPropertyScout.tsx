@@ -8,13 +8,49 @@ import {
   Loader2,
   CheckCircle2,
 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { registerScout } from "@/app/property-scout/actions";
+
+import {
+  daftarKabupatenKota,
+  getKecamatan,
+} from "@/data/daftar_kabupaten_kota_indonesia";
 
 export default function FormPropertyScout() {
   const [isPending, startTransition] = useTransition();
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [cityQuery, setCityQuery] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [isCityOpen, setIsCityOpen] = useState(false);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
+
+  const [districtQuery, setDistrictQuery] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [isDistrictOpen, setIsDistrictOpen] = useState(false);
+  const districtDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        cityDropdownRef.current &&
+        !cityDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCityOpen(false);
+      }
+      if (
+        districtDropdownRef.current &&
+        !districtDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDistrictOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const availableDistricts = selectedCity ? getKecamatan(selectedCity) : [];
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -94,7 +130,6 @@ export default function FormPropertyScout() {
                   segera menghubungi Anda melalui nomor WhatsApp yang terdaftar
                   untuk langkah selanjutnya.
                 </p>
-
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -146,45 +181,198 @@ export default function FormPropertyScout() {
                       className="w-full bg-white/5 border border-slate-600 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
                     />
                   </div>
-                  {/* Kota Domisili */}
-                  <div className="flex flex-col gap-2">
+                  {/* Kota Domisili (Searchable Dropdown) */}
+                  <div
+                    className="flex flex-col gap-2 relative"
+                    ref={cityDropdownRef}
+                  >
                     <label className="text-slate-300 text-sm font-medium">
-                      Kota Domisili
+                      Kabupaten / Kota Domisili
                     </label>
-                    <select
+                    <input
+                      type="hidden"
                       name="city"
+                      value={selectedCity}
                       required
-                      className="w-full bg-white/5 border border-slate-600 rounded-xl px-4 py-3.5 text-slate-300 appearance-none focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
-                      defaultValue=""
-                      style={{
-                        backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "right 1rem center",
-                        backgroundSize: "1em",
-                      }}
+                    />
+
+                    <div
+                      onClick={() => setIsCityOpen(!isCityOpen)}
+                      className="w-full bg-white/5 border border-slate-600 rounded-xl px-4 py-3.5 cursor-pointer flex justify-between items-center transition-colors hover:bg-white/10"
                     >
-                      <option value="" disabled className="text-slate-500">
-                        Pilih Kota
-                      </option>
-                      <option value="jakarta" className="text-[#0B1528]">
-                        Jakarta
-                      </option>
-                      <option value="bogor" className="text-[#0B1528]">
-                        Bogor
-                      </option>
-                      <option value="depok" className="text-[#0B1528]">
-                        Depok
-                      </option>
-                      <option value="tangerang" className="text-[#0B1528]">
-                        Tangerang
-                      </option>
-                      <option value="bekasi" className="text-[#0B1528]">
-                        Bekasi
-                      </option>
-                      <option value="lainnya" className="text-[#0B1528]">
-                        Lainnya
-                      </option>
-                    </select>
+                      <span
+                        className={
+                          selectedCity ? "text-white" : "text-slate-500"
+                        }
+                      >
+                        {selectedCity || "Pilih Kota"}
+                      </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#94a3b8"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={`w-4 h-4 transition-transform ${isCityOpen ? "rotate-180" : ""}`}
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
+
+                    {isCityOpen && (
+                      <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#0F1C35] border border-slate-600 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col">
+                        <input
+                          type="text"
+                          placeholder="Cari kota..."
+                          className="w-full bg-transparent border-b border-slate-700 px-4 py-3 text-white focus:outline-none placeholder:text-slate-500"
+                          value={cityQuery}
+                          onChange={(e) => setCityQuery(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          autoFocus
+                        />
+                        <div
+                          className="max-h-48 overflow-y-auto"
+                          style={{
+                            scrollbarWidth: "thin",
+                            scrollbarColor: "#475569 transparent",
+                          }}
+                        >
+                          {daftarKabupatenKota.filter((c) =>
+                            c.toLowerCase().includes(cityQuery.toLowerCase()),
+                          ).length > 0 ? (
+                            daftarKabupatenKota
+                              .filter((c) =>
+                                c
+                                  .toLowerCase()
+                                  .includes(cityQuery.toLowerCase()),
+                              )
+                              .map((city) => (
+                                <div
+                                  key={city}
+                                  className={`px-4 py-2.5 cursor-pointer transition-colors ${selectedCity === city ? "bg-amber-500/20 text-amber-500" : "text-slate-300 hover:bg-white/5"}`}
+                                  onClick={() => {
+                                    setSelectedCity(city);
+                                    setIsCityOpen(false);
+                                    setCityQuery("");
+                                    setSelectedDistrict(""); // Reset kecamatan jika kota berubah
+                                  }}
+                                >
+                                  {city}
+                                </div>
+                              ))
+                          ) : (
+                            <div className="px-4 py-3 text-slate-500 text-sm text-center">
+                              Kota tidak ditemukan
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Kecamatan Domisili */}
+                <div className="grid grid-cols-1 gap-5">
+                  <div
+                    className="flex flex-col gap-2 relative"
+                    ref={districtDropdownRef}
+                  >
+                    <label className="text-slate-300 text-sm font-medium">
+                      Kecamatan Domisili
+                    </label>
+                    <input
+                      type="hidden"
+                      name="district"
+                      value={selectedDistrict}
+                      required={availableDistricts.length > 0}
+                    />
+
+                    <div
+                      onClick={() => {
+                        if (selectedCity && availableDistricts.length > 0)
+                          setIsDistrictOpen(!isDistrictOpen);
+                      }}
+                      className={`w-full bg-white/5 border border-slate-600 rounded-xl px-4 py-3.5 flex justify-between items-center transition-colors ${!selectedCity || availableDistricts.length === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-white/10"}`}
+                    >
+                      <span
+                        className={
+                          selectedDistrict ? "text-white" : "text-slate-500"
+                        }
+                      >
+                        {!selectedCity
+                          ? "Pilih kota terlebih dahulu"
+                          : availableDistricts.length === 0
+                            ? "Kecamatan tidak tersedia"
+                            : selectedDistrict || "Pilih Kecamatan"}
+                      </span>
+                      {selectedCity && availableDistricts.length > 0 && (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#94a3b8"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={`w-4 h-4 transition-transform ${isDistrictOpen ? "rotate-180" : ""}`}
+                        >
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      )}
+                    </div>
+
+                    {isDistrictOpen && (
+                      <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#0F1C35] border border-slate-600 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col">
+                        <input
+                          type="text"
+                          placeholder="Cari kecamatan..."
+                          className="w-full bg-transparent border-b border-slate-700 px-4 py-3 text-white focus:outline-none placeholder:text-slate-500"
+                          value={districtQuery}
+                          onChange={(e) => setDistrictQuery(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          autoFocus
+                        />
+                        <div
+                          className="max-h-48 overflow-y-auto"
+                          style={{
+                            scrollbarWidth: "thin",
+                            scrollbarColor: "#475569 transparent",
+                          }}
+                        >
+                          {availableDistricts.filter((d: string) =>
+                            d
+                              .toLowerCase()
+                              .includes(districtQuery.toLowerCase()),
+                          ).length > 0 ? (
+                            availableDistricts
+                              .filter((d: string) =>
+                                d
+                                  .toLowerCase()
+                                  .includes(districtQuery.toLowerCase()),
+                              )
+                              .map((district: string) => (
+                                <div
+                                  key={district}
+                                  className={`px-4 py-2.5 cursor-pointer transition-colors ${selectedDistrict === district ? "bg-amber-500/20 text-amber-500" : "text-slate-300 hover:bg-white/5"}`}
+                                  onClick={() => {
+                                    setSelectedDistrict(district);
+                                    setIsDistrictOpen(false);
+                                    setDistrictQuery("");
+                                  }}
+                                >
+                                  {district}
+                                </div>
+                              ))
+                          ) : (
+                            <div className="px-4 py-3 text-slate-500 text-sm text-center">
+                              Kecamatan tidak ditemukan
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

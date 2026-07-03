@@ -17,10 +17,15 @@ export async function registerScout(formData: FormData) {
     const fullName = formData.get("fullName") as string;
     const whatsapp = formData.get("whatsapp") as string;
     const email = formData.get("email") as string;
-    const city = formData.get("city") as string;
+    let city = formData.get("city") as string;
+    const district = formData.get("district") as string;
 
     if (!fullName || !whatsapp || !email || !city) {
       return { success: false, error: "Harap isi semua kolom" };
+    }
+
+    if (district) {
+      city = `${city} - Kec. ${district}`;
     }
 
     await prisma.propertyScout.create({
