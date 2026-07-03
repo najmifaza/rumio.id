@@ -4,6 +4,19 @@ import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Cari Properti Dijual & Disewakan | Rumio.id",
+  description: "Temukan daftar lengkap rumah, perumahan baru, apartemen, dan tanah yang dijual atau disewakan di wilayah Purwokerto dan sekitarnya.",
+  openGraph: {
+    title: "Cari Properti Dijual & Disewakan | Rumio.id",
+    description: "Temukan daftar lengkap rumah, perumahan baru, apartemen, dan tanah yang dijual atau disewakan di wilayah Purwokerto dan sekitarnya.",
+    url: "https://rumio.id/properti",
+    type: "website",
+  },
+};
+
 export default async function PropertiesPage({
   searchParams,
 }: {

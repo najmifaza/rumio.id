@@ -4,10 +4,19 @@ import BenefitsPropertyScout from "@/components/Section/BenefitsPropertyScout";
 import HowItWorksPropertyScout from "@/components/Section/HowItWorksPropertyScout";
 import FormPropertyScout from "@/components/Section/FormPropertyScout";
 
-export const metadata = {
-  title: "Property Scout | Rumio.id",
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Gabung Jadi Property Scout | Rumio.id",
   description:
-    "Layanan eksklusif Rumio.id untuk mencarikan properti impian sesuai kriteria Anda.",
+    "Jadilah bagian dari Rumio.id sebagai Property Scout. Temukan properti, referensikan, dan dapatkan penghasilan tambahan dengan mudah tanpa ribet.",
+  openGraph: {
+    title: "Gabung Jadi Property Scout | Rumio.id",
+    description:
+      "Jadilah bagian dari Rumio.id sebagai Property Scout. Temukan properti, referensikan, dan dapatkan penghasilan tambahan dengan mudah tanpa ribet.",
+    url: "https://rumio.id/property-scout",
+    type: "website",
+  },
 };
 
 export default function PropertyScoutPage() {

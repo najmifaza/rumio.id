@@ -12,6 +12,18 @@ import HeroBlog from "@/components/Section/HeroBlog";
 import CtaHelpCard from "@/components/ui/cta-help-card";
 import { getAllBlogs, getBlogCategories } from "@/lib/blog";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Blog & Artikel Properti Terbaru | Rumio.id",
+  description: "Dapatkan informasi terbaru seputar tren properti, tips jual beli rumah, investasi real estate, dan panduan Virtual Tour 360° di blog Rumio.id.",
+  openGraph: {
+    title: "Blog & Artikel Properti Terbaru | Rumio.id",
+    description: "Dapatkan informasi terbaru seputar tren properti, tips jual beli rumah, investasi real estate, dan panduan Virtual Tour 360° di blog Rumio.id.",
+    url: "https://rumio.id/blog",
+    type: "website",
+  },
+};
 
 export default async function BlogPage({
   searchParams,

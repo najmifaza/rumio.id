@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 import { getSettings } from "@/app/admin/settings/actions";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://rumio.id"),
   title: "Rumio.id | Jual Beli Properti Purwokerto & Virtual Tour 360°",
   description:
     "Temukan properti impian Anda di Purwokerto dan Banyumas melalui Rumio.id. Kami menyediakan layanan jual beli, sewa rumah, dan perumahan baru dengan inovasi survei Virtual Tour 360°.",
