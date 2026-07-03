@@ -4,10 +4,13 @@ import { useState } from "react";
 import { updateOrderStatus, deleteOrder } from "@/app/actions/order";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export function OrderStatusSelect({ id, currentStatus }: { id: string; currentStatus: string }) {
   const router = useRouter();
   const [isUpdating, setIsUpdating] = useState(false);
+  const { showToast } = useToast();
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value;
@@ -15,13 +18,14 @@ export function OrderStatusSelect({ id, currentStatus }: { id: string; currentSt
     try {
       const res = await updateOrderStatus(id, newStatus);
       if (res.success) {
+        showToast("Status pesanan diperbarui", "success");
         router.refresh();
       } else {
-        alert("Gagal memperbarui status.");
+        showToast("Gagal memperbarui status", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan.");
+      showToast("Terjadi kesalahan sistem", "error");
     } finally {
       setIsUpdating(false);
     }
@@ -50,21 +54,24 @@ export function OrderStatusSelect({ id, currentStatus }: { id: string; currentSt
 export function DeleteOrderButton({ id }: { id: string }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   const handleDelete = async () => {
-    if (!confirm("Yakin ingin menghapus pesanan ini secara permanen?")) return;
+    if (!(await confirm({ message: "Yakin ingin menghapus pesanan ini secara permanen?", confirmText: "Ya, Hapus" }))) return;
     
     setIsDeleting(true);
     try {
       const res = await deleteOrder(id);
       if (res.success) {
+        showToast("Pesanan berhasil dihapus", "success");
         router.refresh();
       } else {
-        alert("Gagal menghapus pesanan.");
+        showToast("Gagal menghapus pesanan", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan sistem.");
+      showToast("Terjadi kesalahan sistem", "error");
     } finally {
       setIsDeleting(false);
     }

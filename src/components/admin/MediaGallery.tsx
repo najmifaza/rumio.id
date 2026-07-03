@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { uploadMedia, deleteMedia } from "@/app/admin/media/actions";
 import { UploadCloud, Image as ImageIcon, File as FileIcon, Trash2, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export interface MediaAssetType {
   id: string;
@@ -21,6 +22,7 @@ export default function MediaGallery({ initialAssets }: { initialAssets: MediaAs
   const [selectedAsset, setSelectedAsset] = useState<MediaAssetType | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { confirm } = useConfirm();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -39,7 +41,7 @@ export default function MediaGallery({ initialAssets }: { initialAssets: MediaAs
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus file ini permanen?")) {
+    if (await confirm({ message: "Apakah Anda yakin ingin menghapus file ini permanen?", confirmText: "Ya, Hapus" })) {
       await deleteMedia(id);
       setSelectedAsset(null);
       router.refresh();

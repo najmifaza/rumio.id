@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
+import { ToastProvider } from "@/components/ui/Toast";
+import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -82,24 +84,28 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col relative font-sans text-slate-900 bg-white">
-        <SmoothScroll>
-          <div className="flex flex-col min-h-screen">
-            <Navbar whatsappNumber={waNumber} />
-            <main className="flex-1">{children}</main>
-            <Footer
-              whatsappNumber={waNumber}
-              rawWhatsapp={waNumberRaw}
-              email={data?.contact_email}
-              address={data?.general_office_address}
-              socials={{
-                instagram: data?.social_instagram,
-                facebook: data?.social_facebook,
-                tiktok: data?.social_tiktok,
-                youtube: data?.social_youtube,
-              }}
-            />
-          </div>
-        </SmoothScroll>
+        <ToastProvider>
+          <ConfirmProvider>
+            <SmoothScroll>
+              <div className="flex flex-col min-h-screen">
+                <Navbar whatsappNumber={waNumber} />
+                <main className="flex-1">{children}</main>
+                <Footer
+                  whatsappNumber={waNumber}
+                  rawWhatsapp={waNumberRaw}
+                  email={data?.contact_email}
+                  address={data?.general_office_address}
+                  socials={{
+                    instagram: data?.social_instagram,
+                    facebook: data?.social_facebook,
+                    tiktok: data?.social_tiktok,
+                    youtube: data?.social_youtube,
+                  }}
+                />
+              </div>
+            </SmoothScroll>
+          </ConfirmProvider>
+        </ToastProvider>
       </body>
     </html>
   );

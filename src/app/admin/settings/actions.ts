@@ -13,6 +13,10 @@ const ALLOWED_KEYS = [
   "social_facebook",
   "social_tiktok",
   "social_youtube",
+  "payment_qris_image_url",
+  "payment_bank_name",
+  "payment_bank_account",
+  "payment_bank_owner",
 ];
 
 export async function saveSettings(data: Record<string, string>) {

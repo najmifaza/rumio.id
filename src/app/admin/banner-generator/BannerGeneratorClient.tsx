@@ -18,6 +18,7 @@ import Icon360 from "@/components/ui/Icon360";
 import MediaPickerModal from "@/components/admin/MediaPickerModal";
 import type { MediaAssetType } from "@/components/admin/MediaGallery";
 import { formatPriceFull } from "@/lib/format";
+import { useToast } from "@/components/ui/Toast";
 
 // Tipe data properti yang dikirim dari server
 type PropertyOption = {
@@ -116,6 +117,7 @@ type Props = {
 
 export default function BannerGeneratorClient({ properties, isAdmin }: Props) {
   const bannerRef = useRef<HTMLDivElement>(null);
+  const { showToast } = useToast();
 
   // Modal state
   const [showMediaModal, setShowMediaModal] = useState(false);
@@ -173,7 +175,7 @@ export default function BannerGeneratorClient({ properties, isAdmin }: Props) {
         link.href = dataUrl;
         link.click();
       })
-      .catch(() => alert("Gagal mengunduh banner. Coba lagi."));
+      .catch(() => showToast("Gagal mengunduh banner. Coba lagi.", "error"));
   }, [title]);
 
   const handleMediaSelect = (assets: MediaAssetType[]) => {
@@ -387,7 +389,7 @@ export default function BannerGeneratorClient({ properties, isAdmin }: Props) {
                     </button>
                   ) : (
                     <button
-                      onClick={() => selectedProperty ? setShowPropertyImageModal(true) : alert("Pilih properti terlebih dahulu!")}
+                      onClick={() => selectedProperty ? setShowPropertyImageModal(true) : showToast("Pilih properti terlebih dahulu!", "error")}
                       className="w-full flex items-center justify-center gap-2 py-2.5 border border-[#D98A2C] text-[#D98A2C] hover:bg-[#D98A2C]/5 rounded-xl text-sm font-bold transition-colors"
                     >
                       <Upload className="w-4 h-4" />

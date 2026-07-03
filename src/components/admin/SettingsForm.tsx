@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { saveSettings } from "@/app/admin/settings/actions";
 import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
+import { Save, Image as ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import MediaPickerModal from "./MediaPickerModal";
+import { useToast } from "@/components/ui/Toast";
 
 export type SettingField = {
   key: string;
   label: string;
-  type?: "text" | "email" | "url" | "textarea" | "tel";
+  type?: "text" | "email" | "url" | "textarea" | "tel" | "image";
   placeholder?: string;
   helpText?: string;
 };
@@ -23,7 +25,9 @@ type Props = {
 
 export default function SettingsForm({ title, description, fields, initialData }: Props) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [activeMediaPicker, setActiveMediaPicker] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, string>>(() => {
     const data: Record<string, string> = {};
     fields.forEach(f => {
@@ -44,10 +48,10 @@ export default function SettingsForm({ title, description, fields, initialData }
     setLoading(false);
     
     if (res.success) {
-      alert("Pengaturan berhasil disimpan!");
+      showToast("Pengaturan berhasil disimpan!", "success");
       router.refresh();
     } else {
-      alert(`Gagal menyimpan: ${res.error}`);
+      showToast(`Gagal menyimpan: ${res.error}`, "error");
     }
   };
 
@@ -65,7 +69,40 @@ export default function SettingsForm({ title, description, fields, initialData }
               <label className="text-[13px] font-bold text-slate-700">
                 {field.label}
               </label>
-              {field.type === "textarea" ? (
+              {field.type === "image" ? (
+                <div className="relative group">
+                  <div
+                    onClick={() => setActiveMediaPicker(field.key)}
+                    className={`w-full cursor-pointer relative overflow-hidden transition-all ${
+                      formData[field.key]
+                        ? "border border-slate-200 rounded-xl group-hover:border-amber-400 group-hover:ring-2 group-hover:ring-amber-400/20 shadow-sm h-48"
+                        : "py-6 px-4 border-2 border-slate-200 border-dashed rounded-xl flex flex-col items-center justify-center bg-slate-50 group-hover:bg-amber-50 group-hover:border-amber-300 text-center"
+                    }`}
+                  >
+                    {formData[field.key] ? (
+                      <div className="relative w-full h-full bg-slate-100 flex items-center justify-center">
+                        <img
+                          src={formData[field.key]}
+                          alt={field.label}
+                          className="max-h-full object-contain"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="text-white text-sm font-bold flex items-center gap-2">
+                            <ImageIcon className="w-5 h-5" /> Ganti Gambar
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <ImageIcon className="w-8 h-8 text-slate-300 group-hover:text-amber-500 mb-2" />
+                        <span className="text-[14px] font-bold text-slate-600 group-hover:text-amber-700">
+                          Pilih Gambar
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ) : field.type === "textarea" ? (
                 <textarea
                   value={formData[field.key]}
                   onChange={(e) => handleChange(field.key, e.target.value)}
@@ -100,6 +137,17 @@ export default function SettingsForm({ title, description, fields, initialData }
           </div>
         </form>
       </div>
+
+      <MediaPickerModal
+        isOpen={!!activeMediaPicker}
+        onClose={() => setActiveMediaPicker(null)}
+        onSelect={(assets) => {
+          if (assets.length > 0 && activeMediaPicker) {
+            handleChange(activeMediaPicker, assets[0].url);
+          }
+        }}
+        multiple={false}
+      />
     </div>
   );
 }

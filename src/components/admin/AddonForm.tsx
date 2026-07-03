@@ -4,10 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { saveAddon } from "@/app/admin/pricing/actions";
+import { useToast } from "@/components/ui/Toast";
 import type { AddonPlan } from "@prisma/client";
 
-export default function AddonForm({ initialData }: { initialData?: AddonPlan }) {
+export default function AddonForm({
+  initialData,
+}: {
+  initialData?: AddonPlan;
+}) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const isEditing = !!initialData;
 
@@ -19,9 +25,13 @@ export default function AddonForm({ initialData }: { initialData?: AddonPlan }) 
     const res = await saveAddon(formData, initialData?.id);
 
     if (res.success) {
+      showToast(
+        isEditing ? "Addon diperbarui" : "Addon ditambahkan",
+        "success",
+      );
       router.push("/admin/pricing");
     } else {
-      alert(res.error);
+      showToast(res.error || "Gagal menyimpan addon", "error");
       setLoading(false);
     }
   };
@@ -34,7 +44,9 @@ export default function AddonForm({ initialData }: { initialData?: AddonPlan }) 
         </h3>
 
         <div className="space-y-2.5">
-          <label className="text-[13px] font-bold text-slate-700">Nama Addon</label>
+          <label className="text-[13px] font-bold text-slate-700">
+            Nama Addon
+          </label>
           <input
             required
             name="name"
@@ -45,7 +57,9 @@ export default function AddonForm({ initialData }: { initialData?: AddonPlan }) 
         </div>
 
         <div className="space-y-2.5">
-          <label className="text-[13px] font-bold text-slate-700">Deskripsi Singkat</label>
+          <label className="text-[13px] font-bold text-slate-700">
+            Deskripsi Singkat
+          </label>
           <textarea
             required
             name="description"
@@ -58,7 +72,9 @@ export default function AddonForm({ initialData }: { initialData?: AddonPlan }) 
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2.5">
-            <label className="text-[13px] font-bold text-slate-700">Harga (Rp)</label>
+            <label className="text-[13px] font-bold text-slate-700">
+              Harga (Rp)
+            </label>
             <input
               required
               type="number"
@@ -70,7 +86,9 @@ export default function AddonForm({ initialData }: { initialData?: AddonPlan }) 
           </div>
 
           <div className="space-y-2.5">
-            <label className="text-[13px] font-bold text-slate-700">Sufiks Harga (Opsional)</label>
+            <label className="text-[13px] font-bold text-slate-700">
+              Sufiks Harga (Opsional)
+            </label>
             <input
               name="priceSuffix"
               defaultValue={initialData?.priceSuffix || ""}
@@ -81,7 +99,9 @@ export default function AddonForm({ initialData }: { initialData?: AddonPlan }) 
         </div>
 
         <div className="space-y-2.5">
-          <label className="text-[13px] font-bold text-slate-700">URL Gambar/Ikon (Opsional)</label>
+          <label className="text-[13px] font-bold text-slate-700">
+            URL Gambar/Ikon (Opsional)
+          </label>
           <input
             name="imageUrl"
             defaultValue={initialData?.imageUrl || ""}
@@ -106,7 +126,11 @@ export default function AddonForm({ initialData }: { initialData?: AddonPlan }) 
             disabled={loading}
             className="bg-[#0B1528] hover:bg-[#1a2b4c] text-white h-12 px-8 rounded-xl font-bold shadow-md"
           >
-            {loading ? "Menyimpan..." : isEditing ? "Simpan Perubahan" : "Simpan Addon"}
+            {loading
+              ? "Menyimpan..."
+              : isEditing
+                ? "Simpan Perubahan"
+                : "Simpan Addon"}
           </Button>
         </div>
       </div>

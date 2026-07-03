@@ -3,13 +3,20 @@
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteBlog } from "@/app/admin/blogs/actions";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export default function DeleteBlogButton({ id }: { id: string }) {
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
+
   const handleDelete = async () => {
-    if (confirm("Yakin ingin menghapus blog/artikel ini? Tindakan ini tidak dapat dibatalkan.")) {
+    if (await confirm({ message: "Yakin ingin menghapus blog/artikel ini? Tindakan ini tidak dapat dibatalkan.", confirmText: "Ya, Hapus" })) {
       const res = await deleteBlog(id);
       if (!res.success) {
-        alert(res.error);
+        showToast(res.error || "Gagal menghapus blog", "error");
+      } else {
+        showToast("Blog berhasil dihapus", "success");
       }
     }
   };

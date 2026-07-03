@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   User as UserIcon,
 } from "lucide-react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 type User = {
   id: string;
@@ -155,9 +156,10 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
   const [resetTarget, setResetTarget] = useState<User | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { confirm } = useConfirm();
 
-  const handleDelete = (user: User) => {
-    if (!confirm(`Hapus pengguna "${user.name}"? Semua properti mereka akan ikut terhapus!`)) return;
+  const handleDelete = async (user: User) => {
+    if (!(await confirm({ message: `Hapus pengguna "${user.name}"? Semua properti mereka akan ikut terhapus!`, confirmText: "Ya, Hapus" }))) return;
     startTransition(async () => {
       await deleteUser(user.id);
       router.refresh();

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X, Check, Upload, Building, MapPin, CreditCard, Loader2 } from "lucide-react";
+import { X, Check, Upload, Building, MapPin, CreditCard, Loader2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitPackageOrder } from "@/app/actions/order";
+import { useToast } from "@/components/ui/Toast";
 
 export type AddonType = {
   id: string;
@@ -21,6 +22,7 @@ interface OrderPackageModalProps {
   } | null;
   addons?: AddonType[]; // Pass available addons from parent or fetch them
   whatsappNumber?: string;
+  paymentSettings?: Record<string, string>;
 }
 
 export default function OrderPackageModal({
@@ -28,12 +30,22 @@ export default function OrderPackageModal({
   onClose,
   selectedPlan,
   addons = [],
-  whatsappNumber = ""
+  whatsappNumber = "",
+  paymentSettings = {}
 }: OrderPackageModalProps) {
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const { showToast } = useToast();
+
+  const handleCopy = () => {
+    const account = paymentSettings.payment_bank_account || "1234 5678 90";
+    navigator.clipboard.writeText(account);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
   if (!isOpen || !selectedPlan) return null;
 
@@ -54,8 +66,8 @@ export default function OrderPackageModal({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!paymentMethod) return alert("Pilih metode pembayaran");
-    if (!proofFile) return alert("Upload bukti pembayaran");
+    if (!paymentMethod) return showToast("Silakan pilih metode pembayaran terlebih dahulu");
+    if (!proofFile) return showToast("Silakan unggah foto bukti pembayaran");
 
     setIsSubmitting(true);
 
@@ -77,7 +89,12 @@ export default function OrderPackageModal({
         const customerName = formData.get("customerName") as string;
         const propertyType = formData.get("propertyType") as string;
         
-        const message = `Halo Tim Rumio,\n\nSaya ${customerName} telah melakukan pemesanan *Paket ${selectedPlan.name}* untuk properti tipe *${propertyType}*.\nTotal Bayar: Rp ${totalPrice.toLocaleString("id-ID")}\nMetode: ${paymentMethod}\n\nMohon segera diproses ya.`;
+        let addonText = "";
+        if (addonDetails.length > 0) {
+          addonText = `\nAdd-on Tambahan:\n` + addonDetails.map(a => `- ${a}`).join("\n");
+        }
+        
+        const message = `Halo Tim Rumio,\n\nSaya ${customerName} telah melakukan pemesanan *Paket ${selectedPlan.name}* untuk properti tipe *${propertyType}*.${addonText}\n\nTotal Bayar: Rp ${totalPrice.toLocaleString("id-ID")}\nMetode: ${paymentMethod}\n\nMohon segera diproses ya.`;
         
         const waUrl = whatsappNumber 
           ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
@@ -92,11 +109,11 @@ export default function OrderPackageModal({
         // Redirect to WA
         window.open(waUrl, "_blank");
       } else {
-        alert(result.error || "Gagal mengirim pesanan");
+        showToast(result.error || "Gagal mengirim pesanan");
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan sistem");
+      showToast("Terjadi kesalahan sistem, silakan coba lagi");
     } finally {
       setIsSubmitting(false);
     }
@@ -235,15 +252,37 @@ export default function OrderPackageModal({
                   {paymentMethod === "QRIS" ? (
                     <div className="text-center">
                       <p className="text-sm text-slate-500 mb-4">Scan QR code di bawah ini menggunakan aplikasi mobile banking atau e-wallet Anda.</p>
-                      <div className="w-48 h-48 bg-slate-100 mx-auto rounded-lg mb-2 flex items-center justify-center text-slate-400">
-                        [Gambar QRIS Rumio]
-                      </div>
+                      {paymentSettings.payment_qris_image_url ? (
+                        <img 
+                          src={paymentSettings.payment_qris_image_url} 
+                          alt="QRIS" 
+                          className="w-48 h-48 object-cover mx-auto rounded-lg mb-2 border"
+                        />
+                      ) : (
+                        <div className="w-48 h-48 bg-slate-100 mx-auto rounded-lg mb-2 flex items-center justify-center text-slate-400">
+                          [Belum Diatur Admin]
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="text-center">
                       <p className="text-sm text-slate-500 mb-2">Transfer ke rekening berikut:</p>
-                      <p className="font-bold text-xl text-[#0B1528]">BCA 1234 5678 90</p>
-                      <p className="text-sm text-slate-600">a/n PT Rumio Digital Properti</p>
+                      <div className="flex items-center justify-center gap-2">
+                        <p className="font-bold text-xl text-[#0B1528]">
+                          {paymentSettings.payment_bank_name || "BCA"} {paymentSettings.payment_bank_account || "1234 5678 90"}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleCopy}
+                          className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                          title="Salin nomor rekening"
+                        >
+                          {isCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      <p className="text-sm text-slate-600">
+                        a/n {paymentSettings.payment_bank_owner || "PT Rumio Digital Properti"}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -268,6 +307,7 @@ export default function OrderPackageModal({
                     <>
                       <Upload className="w-6 h-6 text-slate-400 mb-2" />
                       <span className="text-sm font-medium text-slate-600">Klik atau drag foto resi/screenshot ke sini</span>
+                      <span className="text-xs text-slate-400 mt-1">Maks. 10MB (JPG, PNG, WEBP)</span>
                     </>
                   )}
                 </div>

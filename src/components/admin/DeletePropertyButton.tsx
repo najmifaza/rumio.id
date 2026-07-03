@@ -4,17 +4,23 @@ import { useState } from "react";
 import { Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteProperty } from "@/app/admin/properties/actions";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export default function DeletePropertyButton({ id }: { id: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   const handleDelete = async () => {
-    if (confirm("Apakah Anda yakin ingin menghapus properti ini?")) {
+    if (await confirm({ message: "Apakah Anda yakin ingin menghapus properti ini?", confirmText: "Ya, Hapus" })) {
       setIsDeleting(true);
       const res = await deleteProperty(id);
       if (!res.success) {
-        alert(res.error);
+        showToast(res.error || "Gagal menghapus properti", "error");
         setIsDeleting(false);
+      } else {
+        showToast("Properti berhasil dihapus", "success");
       }
     }
   };

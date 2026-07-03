@@ -3,16 +3,21 @@
 import { useState } from "react";
 import { updateInquiryStatus, deleteInquiry } from "./actions";
 import { Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export function InquiryStatusSelect({ id, currentStatus }: { id: string; currentStatus: string }) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const { showToast } = useToast();
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     setIsUpdating(true);
     const res = await updateInquiryStatus(id, e.target.value);
     setIsUpdating(false);
     if (!res.success) {
-      alert(res.error);
+      showToast(res.error || "Gagal memperbarui status", "error");
+    } else {
+      showToast("Status diperbarui", "success");
     }
   };
 
@@ -38,15 +43,19 @@ export function InquiryStatusSelect({ id, currentStatus }: { id: string; current
 
 export function DeleteInquiryButton({ id }: { id: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   const handleDelete = async () => {
-    if (!confirm("Apakah Anda yakin ingin menghapus data ini?")) return;
+    if (!(await confirm({ message: "Apakah Anda yakin ingin menghapus data ini?", confirmText: "Ya, Hapus" }))) return;
     
     setIsDeleting(true);
     const res = await deleteInquiry(id);
     if (!res.success) {
       setIsDeleting(false);
-      alert(res.error);
+      showToast(res.error || "Gagal menghapus data", "error");
+    } else {
+      showToast("Data berhasil dihapus", "success");
     }
   };
 

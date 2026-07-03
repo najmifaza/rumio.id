@@ -16,6 +16,7 @@ import type { Property, PropertyImage } from "@prisma/client";
 import type { VirtualTourData } from "@/components/ui/VirtualTourViewer";
 import MediaPickerModal from "./MediaPickerModal";
 import type { MediaAssetType } from "./MediaGallery";
+import { useToast } from "@/components/ui/Toast";
 
 type PropertyWithImages = Property & { images: PropertyImage[] };
 
@@ -29,6 +30,7 @@ export default function PropertyForm({
   owners?: OwnerOption[];
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const isEditing = !!initialData;
@@ -139,7 +141,7 @@ export default function PropertyForm({
     e.preventDefault();
 
     if (images.length < 3) {
-      alert("Mohon masukkan minimal 3 gambar properti.");
+      showToast("Mohon masukkan minimal 3 gambar properti.", "error");
       return;
     }
 
@@ -151,8 +153,9 @@ export default function PropertyForm({
     const mapsUrl = formData.get("mapsUrl") as string;
     if (mapsUrl && mapsUrl.trim() !== "") {
       if (!mapsUrl.includes("embed") && !mapsUrl.includes("iframe")) {
-        alert(
-          "Validasi Peta Gagal: Harap masukkan kode <iframe src=...> atau link Embed Google Maps yang valid. Link biasa tidak diizinkan.",
+        showToast(
+          "Validasi Peta Gagal: Harap masukkan kode <iframe src=...> atau link Embed Google Maps yang valid.",
+          "error"
         );
         setLoading(false);
         return;
@@ -181,9 +184,10 @@ export default function PropertyForm({
     const res = await saveProperty(formData, initialData?.id);
 
     if (res.success) {
+      showToast(isEditing ? "Properti diperbarui" : "Properti ditambahkan", "success");
       router.push("/admin/properties");
     } else {
-      alert(res.error);
+      showToast(res.error || "Gagal menyimpan properti", "error");
       setLoading(false);
     }
   };

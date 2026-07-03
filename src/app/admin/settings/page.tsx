@@ -61,6 +61,30 @@ export default async function SettingsPage() {
       label: "YouTube URL", 
       type: "url", 
       placeholder: "https://youtube.com/c/rumio_id" 
+    },
+    { 
+      key: "payment_qris_image_url", 
+      label: "Gambar QRIS", 
+      type: "image", 
+      helpText: "Gambar QRIS untuk pembayaran. Akan diunggah atau dipilih dari Media Gallery."
+    },
+    { 
+      key: "payment_bank_name", 
+      label: "Nama Bank Transfer", 
+      type: "text", 
+      placeholder: "BCA" 
+    },
+    { 
+      key: "payment_bank_account", 
+      label: "Nomor Rekening Bank", 
+      type: "text", 
+      placeholder: "1234567890" 
+    },
+    { 
+      key: "payment_bank_owner", 
+      label: "Nama Pemilik Rekening", 
+      type: "text", 
+      placeholder: "PT Rumio Digital Properti" 
     }
   ];
 

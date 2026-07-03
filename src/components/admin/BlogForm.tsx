@@ -8,6 +8,7 @@ import type { Blog } from "@prisma/client";
 import dynamic from "next/dynamic";
 import MediaPickerModal from "./MediaPickerModal";
 import { Image as ImageIcon } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 const TipTapEditor = dynamic(() => import("@/components/admin/TipTapEditor"), {
   ssr: false,
@@ -20,6 +21,7 @@ const TipTapEditor = dynamic(() => import("@/components/admin/TipTapEditor"), {
 
 export default function BlogForm({ initialData }: { initialData?: Blog }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState(initialData?.content || "");
   const [imagePreview, setImagePreview] = useState(
@@ -57,9 +59,10 @@ export default function BlogForm({ initialData }: { initialData?: Blog }) {
     const res = await saveBlog(formData, initialData?.id);
 
     if (res.success) {
+      showToast(isEditing ? "Artikel diperbarui" : "Artikel diterbitkan", "success");
       router.push("/admin/blogs");
     } else {
-      alert(res.error);
+      showToast(res.error || "Gagal menyimpan artikel", "error");
       setLoading(false);
     }
   };

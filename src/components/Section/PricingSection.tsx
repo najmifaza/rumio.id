@@ -25,7 +25,13 @@ export default async function PricingSection() {
     orderBy: { price: 'asc' }
   });
 
-  const { data } = await getSettings(["contact_whatsapp"]);
+  const { data } = await getSettings([
+    "contact_whatsapp",
+    "payment_qris_image_url",
+    "payment_bank_name",
+    "payment_bank_account",
+    "payment_bank_owner"
+  ]);
   const waNumber = data?.contact_whatsapp?.replace(/[^0-9]/g, "") || "";
   const waText = encodeURIComponent("Halo Admin Rumio, saya tertarik untuk mendiskusikan paket khusus (Custom Plan) untuk pemasaran properti saya.");
   const waLink = waNumber ? `https://wa.me/${waNumber}?text=${waText}` : "#";
@@ -47,7 +53,12 @@ export default async function PricingSection() {
         </div>
 
         {/* Pricing Cards */}
-        <PricingCardsWrapper pricingPlans={pricingPlans} addons={addons} whatsappNumber={waNumber} />
+        <PricingCardsWrapper 
+          pricingPlans={pricingPlans} 
+          addons={addons} 
+          whatsappNumber={waNumber} 
+          paymentSettings={data || {}} 
+        />
 
         {/* Custom Package Banner */}
         <div className="mt-16 bg-white border border-slate-200 rounded-[24px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">

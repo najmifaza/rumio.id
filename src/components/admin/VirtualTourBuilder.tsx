@@ -32,6 +32,7 @@ if (typeof window !== "undefined") {
 
 import MediaPickerModal from "./MediaPickerModal";
 import type { MediaAssetType } from "./MediaGallery";
+import { useToast } from "@/components/ui/Toast";
 
 interface VirtualTourBuilderProps {
   initialData?: VirtualTourData | null;
@@ -40,6 +41,7 @@ interface VirtualTourBuilderProps {
 export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderProps) {
   const [nodes, setNodes] = useState<VirtualTourNode[]>(initialData?.nodes || []);
   const [startNodeId, setStartNodeId] = useState<string>(initialData?.startNodeId || "");
+  const { showToast } = useToast();
   
   // Add node state
   const [newNodeName, setNewNodeName] = useState("");
@@ -154,12 +156,12 @@ export default function VirtualTourBuilder({ initialData }: VirtualTourBuilderPr
 
   const handleAddNode = () => {
     if (!newNodeName) {
-       alert("Mohon isi nama ruangan.");
+       showToast("Mohon isi nama ruangan", "error");
        return;
     }
     
     if (!newNodeUrl) {
-       alert("Mohon pilih file foto 360.");
+       showToast("Mohon pilih file foto 360", "error");
        return;
     }
 

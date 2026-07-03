@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { savePlan } from "@/app/admin/pricing/actions";
 import type { PricingPlan, PricingFeature } from "@prisma/client";
 import { Plus, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 type PlanWithFeatures = PricingPlan & { features: PricingFeature[] };
 
 export default function PricingPlanForm({ initialData }: { initialData?: PlanWithFeatures }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const isEditing = !!initialData;
   
@@ -41,9 +43,10 @@ export default function PricingPlanForm({ initialData }: { initialData?: PlanWit
     const res = await savePlan(formData, initialData?.id);
 
     if (res.success) {
+      showToast(isEditing ? "Paket diperbarui" : "Paket ditambahkan", "success");
       router.push("/admin/pricing");
     } else {
-      alert(res.error);
+      showToast(res.error || "Gagal menyimpan paket", "error");
       setLoading(false);
     }
   };
@@ -156,7 +159,7 @@ export default function PricingPlanForm({ initialData }: { initialData?: PlanWit
             ))}
             {features.length === 0 && (
               <div className="text-center py-6 text-sm text-slate-400 border border-dashed border-slate-200 rounded-xl">
-                Belum ada fitur. Klik "Tambah Fitur" untuk memulai.
+                Belum ada fitur. Klik &quot;Tambah Fitur&quot; untuk memulai.
               </div>
             )}
           </div>

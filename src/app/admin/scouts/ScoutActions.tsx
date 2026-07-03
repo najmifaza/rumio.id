@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Trash2, Loader2 } from "lucide-react";
 import { updateScoutStatus, deleteScout } from "./actions";
 import { useRouter } from "next/navigation";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export function ScoutStatusSelect({ id, currentStatus }: { id: string; currentStatus: string }) {
   const [isPending, startTransition] = useTransition();
@@ -53,9 +54,10 @@ export function ScoutStatusSelect({ id, currentStatus }: { id: string; currentSt
 export function DeleteScoutButton({ id }: { id: string }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { confirm } = useConfirm();
 
-  const handleDelete = () => {
-    if (confirm("Apakah Anda yakin ingin menghapus pendaftar ini?")) {
+  const handleDelete = async () => {
+    if (await confirm({ message: "Apakah Anda yakin ingin menghapus pendaftar ini?", confirmText: "Ya, Hapus" })) {
       startTransition(async () => {
         await deleteScout(id);
         router.refresh();
