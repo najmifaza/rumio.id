@@ -13,9 +13,9 @@ if (typeof window !== "undefined") {
   const pluginProto = VirtualTourPlugin.prototype as any;
   if (pluginProto.loadNode && !pluginProto._patchedLoadNode) {
     const originalLoadNode = pluginProto.loadNode;
-    pluginProto.loadNode = function(...args: any[]) {
+    pluginProto.loadNode = function (...args: any[]) {
       return originalLoadNode.apply(this, args).catch((e: any) => {
-        if (e && e.message && e.message.includes('clear')) {
+        if (e && e.message && e.message.includes("clear")) {
           console.warn("Caught VirtualTourPlugin loadNode unmount error.");
         } else {
           throw e;
@@ -57,7 +57,9 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
     if (viewerRef.current) return;
 
     const isTour = data.nodes && data.nodes.length > 0;
-    const initialPanorama = isTour ? undefined : (data.url || "/placeholder-image.jpg");
+    const initialPanorama = isTour
+      ? undefined
+      : data.url || "/placeholder-image.jpg";
 
     let isMounted = true;
     let localViewer: Viewer | null = null;
@@ -74,7 +76,7 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
         navbar: ["zoom", "fullscreen"],
         defaultYaw: 0,
         defaultPitch: 0,
-        touchmoveTwoFingers: true,
+        touchmoveTwoFingers: false,
         mousewheelCtrlKey: true,
         plugins: isTour
           ? [
@@ -95,7 +97,11 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
                           : undefined),
                     })),
                   })),
-                  startNodeId: data.startNodeId || (data.nodes && data.nodes.length > 0 ? data.nodes[0].id : undefined),
+                  startNodeId:
+                    data.startNodeId ||
+                    (data.nodes && data.nodes.length > 0
+                      ? data.nodes[0].id
+                      : undefined),
                 },
               ],
             ]

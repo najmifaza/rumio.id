@@ -85,6 +85,20 @@ export default async function SettingsPage() {
       label: "Nama Pemilik Rekening", 
       type: "text", 
       placeholder: "PT Rumio Digital Properti" 
+    },
+    { 
+      key: "tracking_google_analytics", 
+      label: "Google Analytics Measurement ID", 
+      type: "text", 
+      placeholder: "G-XXXXXXXXXX",
+      helpText: "Masukkan Measurement ID (G-XXXXX) untuk melacak statistik website."
+    },
+    { 
+      key: "tracking_meta_pixel", 
+      label: "Meta Pixel ID", 
+      type: "text", 
+      placeholder: "123456789012345",
+      helpText: "Masukkan Pixel ID untuk melacak konversi Facebook dan Instagram Ads."
     }
   ];
 

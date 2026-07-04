@@ -17,6 +17,8 @@ const ALLOWED_KEYS = [
   "payment_bank_name",
   "payment_bank_account",
   "payment_bank_owner",
+  "tracking_google_analytics",
+  "tracking_meta_pixel",
 ];
 
 export async function saveSettings(data: Record<string, string>) {

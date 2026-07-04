@@ -31,14 +31,20 @@ export default function SidebarNav({
   const pathname = usePathname();
   const isAdmin = userRole === "ADMIN";
   const [isInboxOpen, setIsInboxOpen] = useState(
-    pathname.startsWith("/admin/inquiries") || pathname.startsWith("/admin/scouts") || pathname.startsWith("/admin/orders"),
+    pathname.startsWith("/admin/inquiries") ||
+      pathname.startsWith("/admin/scouts") ||
+      pathname.startsWith("/admin/orders"),
   );
 
   // Menu yang selalu tampil untuk semua role
   const commonItems = [
     { name: "Dashboard", href: "/admin", icon: Home },
     { name: "Properti", href: "/admin/properties", icon: Building },
-    { name: "Buat Banner", href: "/admin/banner-generator", icon: LayoutTemplate },
+    {
+      name: "Buat Banner",
+      href: "/admin/banner-generator",
+      icon: LayoutTemplate,
+    },
   ];
 
   // Menu khusus ADMIN Utama
@@ -51,8 +57,16 @@ export default function SidebarNav({
       toggle: () => setIsInboxOpen(!isInboxOpen),
       activePaths: ["/admin/inquiries", "/admin/scouts", "/admin/orders"],
       children: [
-        { name: "Permintaan Properti", href: "/admin/inquiries", badge: newInquiriesCount },
-        { name: "Pendaftaran Scout", href: "/admin/scouts", badge: newScoutsCount },
+        {
+          name: "Permintaan Properti",
+          href: "/admin/inquiries",
+          badge: newInquiriesCount,
+        },
+        {
+          name: "Pendaftaran Scout",
+          href: "/admin/scouts",
+          badge: newScoutsCount,
+        },
         { name: "Pesanan Paket", href: "/admin/orders", badge: newOrdersCount },
       ],
     },
@@ -64,7 +78,13 @@ export default function SidebarNav({
   ];
 
   const navItems = isAdmin
-    ? [commonItems[0], ...adminOnlyItems.slice(0, 1), commonItems[1], commonItems[2], ...adminOnlyItems.slice(1)]
+    ? [
+        commonItems[0],
+        ...adminOnlyItems.slice(0, 1),
+        commonItems[1],
+        commonItems[2],
+        ...adminOnlyItems.slice(1),
+      ]
     : commonItems;
 
   const renderItem = (item: {
@@ -78,7 +98,9 @@ export default function SidebarNav({
     children?: { name: string; href: string; badge?: number }[];
   }) => {
     if (item.isDropdown) {
-      const isGroupActive = item.activePaths?.some((p) => pathname.startsWith(p));
+      const isGroupActive = item.activePaths?.some((p) =>
+        pathname.startsWith(p),
+      );
 
       return (
         <div key={item.name} className="pt-1">
@@ -96,11 +118,17 @@ export default function SidebarNav({
             </div>
             <div className="flex items-center gap-2">
               {item.name === "Kotak Masuk" &&
-                (newInquiriesCount > 0 || newScoutsCount > 0 || newOrdersCount > 0) &&
+                (newInquiriesCount > 0 ||
+                  newScoutsCount > 0 ||
+                  newOrdersCount > 0) &&
                 !item.isOpen && (
                   <div className="w-2 h-2 rounded-full bg-red-500"></div>
                 )}
-              {item.isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {item.isOpen ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
             </div>
           </button>
 
@@ -158,4 +186,3 @@ export default function SidebarNav({
 
   return <nav className="space-y-1">{navItems.map(renderItem)}</nav>;
 }
-
