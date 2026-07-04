@@ -1,30 +1,29 @@
-"use server";
-
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { formLimiter } from "@/lib/rate-limit";
 
-export async function submitInquiry(data: {
-  type: string;
-  name: string;
-  phone: string;
-  transactionType: string;
-  propertyType: string;
-  location: string;
-  budgetOrPrice: string;
-}) {
+export async function POST(req: Request) {
   try {
-    // Rate limiting: max 5 per minute per IP
     const headersList = await headers();
     const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
     const rateCheck = formLimiter.check(`inquiry:${ip}`);
+    
     if (!rateCheck.allowed) {
-      return { success: false, error: "Terlalu banyak permintaan. Silakan coba lagi dalam 1 menit." };
+      return NextResponse.json(
+        { success: false, error: "Terlalu banyak permintaan. Silakan coba lagi dalam 1 menit." },
+        { status: 429 }
+      );
     }
 
+    const data = await req.json();
+
     if (!data.name?.trim() || !data.phone?.trim() || !data.type?.trim()) {
-      return { success: false, error: "Nama, nomor telepon, dan tipe permintaan wajib diisi." };
+      return NextResponse.json(
+        { success: false, error: "Nama, nomor telepon, dan tipe permintaan wajib diisi." },
+        { status: 400 }
+      );
     }
 
     const inquiry = await prisma.inquiry.create({
@@ -43,10 +42,12 @@ export async function submitInquiry(data: {
     
     revalidatePath("/admin", "layout");
     
-    return { success: true, data: inquiry };
+    return NextResponse.json({ success: true, data: inquiry });
   } catch (error) {
     console.error("Failed to submit inquiry:", error);
-    return { success: false, error: "Gagal mengirim permintaan. Silakan coba lagi." };
+    return NextResponse.json(
+      { success: false, error: "Gagal mengirim permintaan. Silakan coba lagi." },
+      { status: 500 }
+    );
   }
 }
-

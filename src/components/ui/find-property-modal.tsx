@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { X, Search } from "lucide-react";
-import { submitInquiry } from "@/app/actions/inquiry";
 
 interface FindPropertyModalProps {
   isOpen: boolean;
@@ -41,15 +40,21 @@ export default function FindPropertyModal({
     e.preventDefault();
     setIsSubmitting(true);
 
-    const res = await submitInquiry({
-      type: "CARI_PROPERTI",
-      name,
-      phone,
-      transactionType,
-      propertyType: propertyType.join(", "),
-      location,
-      budgetOrPrice: `${minPrice} - ${maxPrice}`,
-    });
+    try {
+      const response = await fetch('/api/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: "CARI_PROPERTI",
+          name,
+          phone,
+          transactionType,
+          propertyType: propertyType.join(", "),
+          location,
+          budgetOrPrice: `${minPrice} - ${maxPrice}`,
+        })
+      });
+      const res = await response.json();
 
     setIsSubmitting(false);
 
@@ -68,6 +73,9 @@ export default function FindPropertyModal({
       }, 3000);
     } else {
       alert(res.error || "Terjadi kesalahan.");
+    }
+    } catch (error) {
+      alert("Terjadi kesalahan. Silakan coba lagi.");
     }
   };
 

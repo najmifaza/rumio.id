@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { X, Check, Upload, Building, MapPin, CreditCard, Loader2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { submitPackageOrder } from "@/app/actions/order";
 import { useToast } from "@/components/ui/Toast";
 
 export type AddonType = {
@@ -82,7 +81,11 @@ export default function OrderPackageModal({
       formData.append("addons", JSON.stringify(addonDetails));
       formData.append("proofOfPayment", proofFile);
 
-      const result = await submitPackageOrder(formData);
+      const response = await fetch('/api/order', {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
 
       if (result.success) {
         // Build WhatsApp Message

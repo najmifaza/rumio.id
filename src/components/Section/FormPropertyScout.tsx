@@ -9,7 +9,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useState, useTransition, useRef, useEffect } from "react";
-import { registerScout } from "@/app/property-scout/actions";
 
 import {
   daftarKabupatenKota,
@@ -58,11 +57,20 @@ export default function FormPropertyScout() {
     const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      const result = await registerScout(formData);
-      if (result.success) {
-        setIsSuccess(true);
-      } else {
-        setErrorMsg(result.error || "Gagal mengirim data");
+      try {
+        const response = await fetch('/api/scout', {
+          method: 'POST',
+          body: formData,
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          setIsSuccess(true);
+        } else {
+          setErrorMsg(result.error || "Gagal mengirim data");
+        }
+      } catch (err) {
+        setErrorMsg("Gagal menghubungi server");
       }
     });
   };
