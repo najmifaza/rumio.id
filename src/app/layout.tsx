@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     "Sewa Properti Banyumas",
     "Agen Properti Purwokerto",
     "Real Estate Banyumas",
-    "Rumah Dijual Purwokerto"
+    "Rumah Dijual Purwokerto",
   ],
   openGraph: {
     title: "Rumio.id | Jual Beli Properti Purwokerto & Virtual Tour 360°",
@@ -75,7 +75,7 @@ export default async function RootLayout({
     "social_tiktok",
     "social_youtube",
     "tracking_google_analytics",
-    "tracking_meta_pixel"
+    "tracking_meta_pixel",
   ]);
   const waNumberRaw = data?.contact_whatsapp || "";
   // Pastikan format nomor yang bisa dipakai untuk link (hilangkan karakter non-angka)
