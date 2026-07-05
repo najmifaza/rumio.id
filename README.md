@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="/public/logo.svg" alt="Rumio.id Logo" width="200" height="auto" />
+  <img src="/public/logo-footer.svg" alt="Rumio.id Logo" width="200" height="auto" />
   <h1>Rumio.id Platform Architecture</h1>
   <p><strong><a href="https://rumio.id">https://rumio.id</a></strong></p>
   <p><strong>Next-Generation Property Marketing & Exploration Platform</strong></p>
