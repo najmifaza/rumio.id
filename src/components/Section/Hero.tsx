@@ -26,10 +26,10 @@ export default function Hero() {
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-0">
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 2xl:px-0">
         <main className="flex flex-col lg:flex-row items-center pt-24 pb-24 lg:py-0 min-h-screen">
           {/* Left Column (Text & CTAs) */}
-          <div className="w-full lg:w-[75%] xl:w-[60%] flex flex-col justify-center space-y-8 relative pt-12 lg:pt-0">
+          <div className="w-full lg:w-[75%] xl:w-[55%] 2xl:w-[60%] flex flex-col justify-center space-y-6 2xl:space-y-8 relative pt-12 lg:pt-0">
             {/* Badge */}
             <Badge variant="amber" className="gap-2 px-4 py-1.5 w-fit">
               <span className="text-[11px] font-bold tracking-wider uppercase">
@@ -38,14 +38,14 @@ export default function Hero() {
             </Badge>
 
             {/* Typography */}
-            <div className="space-y-4 md:space-y-6">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-extrabold text-[#0B1528] leading-[1.2] lg:leading-[1.15] tracking-tight">
+            <div className="space-y-3 md:space-y-5 2xl:space-y-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl 2xl:text-6xl font-extrabold text-[#0B1528] leading-[1.2] lg:leading-[1.15] tracking-tight">
                 Pamerkan Properti <br className="hidden sm:block" />
                 Anda Secara Profesional, <br className="hidden sm:block" />
                 Tingkatkan Peluang <br className="hidden sm:block" />
                 <span className="text-amber-600">Lebih Cepat Terjual.</span>
               </h1>
-              <p className="text-slate-600 text-sm sm:text-base lg:text-lg leading-relaxed max-w-[540px]">
+              <p className="text-slate-600 text-sm sm:text-base 2xl:text-lg leading-relaxed max-w-[540px]">
                 Rumio membantu Anda menampilkan properti dengan{" "}
                 <span className="font-semibold text-slate-800">
                   Virtual Tour 360°
@@ -83,7 +83,7 @@ export default function Hero() {
             </div>
 
             {/* Bottom Features */}
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-6 pt-10 border-t border-slate-200/60 mt-4">
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-4 2xl:gap-y-6 pt-6 2xl:pt-10 border-t border-slate-200/60 mt-2 2xl:mt-4">
               <div className="flex items-center gap-3 text-sm font-semibold text-slate-700">
                 <div className="p-2 rounded-full bg-slate-100/80">
                   <Icon360 className="w-5 h-5 text-slate-600 shrink-0 opacity-80" />

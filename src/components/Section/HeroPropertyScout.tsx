@@ -35,7 +35,7 @@ export default function HeroPropertyScout() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-0 py-20">
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 2xl:px-0 py-20">
         <div className="max-w-2xl xl:max-w-3xl text-left">
           <Breadcrumbs
             className="mb-6"
@@ -44,7 +44,7 @@ export default function HeroPropertyScout() {
               { label: "Property Scout" },
             ]}
           />
-          <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold mb-6 tracking-tight text-[#0B1528] leading-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-5xl 2xl:text-[56px] font-bold mb-6 tracking-tight text-[#0B1528] leading-tight">
             Jadi <span className="text-amber-600">Property Scout</span> Rumio
           </h1>
 
