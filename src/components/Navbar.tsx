@@ -100,7 +100,7 @@ export default function Navbar({
           </div>
 
           {/* DESKTOP NAVIGATION */}
-          <nav className="hidden md:flex flex-shrink-0 items-center gap-4 lg:gap-6 2xl:gap-8 text-base 2xl:text-lg font-semibold text-slate-600">
+          <nav className="hidden xl:flex flex-shrink-0 items-center gap-4 lg:gap-6 2xl:gap-8 text-base 2xl:text-lg font-semibold text-slate-600">
             {navLinks.map((link, index) => (
               <Link
                 key={index}
@@ -115,7 +115,7 @@ export default function Navbar({
           </nav>
 
           {/* DESKTOP BUTTONS */}
-          <div className="hidden md:flex flex-1 justify-end items-center gap-3 lg:gap-4">
+          <div className="hidden xl:flex flex-1 justify-end items-center gap-3 lg:gap-4">
             <Button
               variant="outline"
               onClick={() => setIsModalOpen(true)}
@@ -140,7 +140,7 @@ export default function Navbar({
           </div>
 
           {/* MOBILE HAMBURGER BUTTON */}
-          <div className="flex-1 flex justify-end md:hidden">
+          <div className="flex-1 flex justify-end xl:hidden">
             <Button
               variant="outline"
               size="icon"
@@ -169,7 +169,7 @@ export default function Navbar({
 
         {/* MOBILE MENU DROPDOWN */}
         <div
-          className={`md:hidden absolute top-full left-0 w-full bg-white shadow-xl transition-all duration-300 ease-in-out origin-top border-t border-slate-100/50 ${
+          className={`xl:hidden absolute top-full left-0 w-full bg-white shadow-xl transition-all duration-300 ease-in-out origin-top border-t border-slate-100/50 ${
             isOpen
               ? "opacity-100 translate-y-0 visible"
               : "opacity-0 -translate-y-4 invisible"
