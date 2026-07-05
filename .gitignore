@@ -42,3 +42,7 @@ next-env.d.ts
 
 /src/generated/prisma
 /docs
+
+# Abaikan file upload dari admin (lokal/Hostinger)
+/public/uploads/*
+!/public/uploads/.gitkeep
