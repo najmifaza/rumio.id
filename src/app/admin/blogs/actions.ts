@@ -2,9 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
 import { requireAdmin } from "@/lib/auth";
 import { sanitizeBlogContent } from "@/lib/sanitize";
+import { SaveBlogSchema } from "@/lib/schemas";
 
 export async function deleteBlog(id: string) {
   try {
@@ -31,16 +31,22 @@ export async function saveBlog(formData: FormData, id?: string) {
   try {
     await requireAdmin();
 
-    const title = formData.get("title")?.toString().trim();
-    const category = formData.get("category")?.toString().trim();
-    const content = formData.get("content")?.toString().trim();
-    const author = formData.get("author")?.toString().trim();
+    const parsed = SaveBlogSchema.safeParse({
+      title: formData.get("title")?.toString().trim(),
+      category: formData.get("category")?.toString().trim(),
+      content: formData.get("content")?.toString().trim(),
+      author: formData.get("author")?.toString().trim(),
+      slug: formData.get("slug")?.toString().trim() || undefined,
+      featuredImage: formData.get("featuredImage")?.toString().trim() || undefined,
+    });
 
-    if (!title || !category || !content || !author) {
-      return { success: false, error: "Semua kolom wajib (Judul, Kategori, Konten, Penulis) harus diisi." };
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? "Input tidak valid.";
+      return { success: false, error: message };
     }
 
-    const customSlug = formData.get("slug")?.toString().trim();
+    const { title, category, content, author, slug: customSlug, featuredImage: featuredImageInput } = parsed.data;
+
     let slug = customSlug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
     
     const existingSlug = await prisma.blog.findFirst({
@@ -56,7 +62,6 @@ export async function saveBlog(formData: FormData, id?: string) {
       slug = `${slug}-${randomSuffix}`;
     }
 
-    const featuredImageInput = formData.get("featuredImage")?.toString().trim();
     const featuredImage = featuredImageInput || "/placeholder-image.jpg";
 
     const payload = {

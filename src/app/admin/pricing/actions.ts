@@ -3,24 +3,26 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
+import { SaveAddonSchema, SavePlanSchema } from "@/lib/schemas";
 
 export async function saveAddon(formData: FormData, id?: string) {
   try {
     await requireAdmin();
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const priceStr = formData.get("price") as string;
-    const priceSuffix = formData.get("priceSuffix") as string | null;
-    const imageUrl = formData.get("imageUrl") as string | null;
 
-    if (!name || !description || !priceStr) {
-      return { success: false, error: "Nama, deskripsi, dan harga wajib diisi." };
+    const parsed = SaveAddonSchema.safeParse({
+      name: formData.get("name"),
+      description: formData.get("description"),
+      price: formData.get("price"),
+      priceSuffix: formData.get("priceSuffix") || undefined,
+      imageUrl: formData.get("imageUrl") || undefined,
+    });
+
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? "Input tidak valid.";
+      return { success: false, error: message };
     }
 
-    const price = parseFloat(priceStr.replace(/[^0-9.-]+/g,""));
-    if (isNaN(price)) {
-      return { success: false, error: "Format harga tidak valid." };
-    }
+    const { name, description, price, priceSuffix, imageUrl } = parsed.data;
 
     const data = {
       name,
@@ -31,14 +33,9 @@ export async function saveAddon(formData: FormData, id?: string) {
     };
 
     if (id) {
-      await prisma.addonPlan.update({
-        where: { id },
-        data,
-      });
+      await prisma.addonPlan.update({ where: { id }, data });
     } else {
-      await prisma.addonPlan.create({
-        data,
-      });
+      await prisma.addonPlan.create({ data });
     }
 
     revalidatePath("/admin/pricing");
@@ -66,19 +63,23 @@ export async function deleteAddon(id: string) {
 export async function savePlan(formData: FormData, id?: string) {
   try {
     await requireAdmin();
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const priceStr = formData.get("price") as string;
-    const icon = formData.get("icon") as string;
-    const isPopular = formData.get("isPopular") === "true";
-    const featuresJson = formData.get("features") as string;
 
-    if (!name || !description || !priceStr) {
-      return { success: false, error: "Semua kolom wajib diisi." };
+    const parsed = SavePlanSchema.safeParse({
+      name: formData.get("name"),
+      description: formData.get("description"),
+      price: formData.get("price"),
+      icon: formData.get("icon") || undefined,
+      isPopular: formData.get("isPopular") === "true",
+      features: formData.get("features") || undefined,
+    });
+
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? "Input tidak valid.";
+      return { success: false, error: message };
     }
 
-    const price = parseFloat(priceStr.replace(/[^0-9.-]+/g,""));
-    
+    const { name, description, price, icon, isPopular, features: featuresJson } = parsed.data;
+
     // Process features
     const featuresList = featuresJson ? JSON.parse(featuresJson) : [];
 
@@ -92,10 +93,7 @@ export async function savePlan(formData: FormData, id?: string) {
 
     if (id) {
       // Update plan
-      await prisma.pricingPlan.update({
-        where: { id },
-        data,
-      });
+      await prisma.pricingPlan.update({ where: { id }, data });
 
       const existingFeatures = await prisma.pricingFeature.findMany({ where: { planId: id } });
       
@@ -117,9 +115,7 @@ export async function savePlan(formData: FormData, id?: string) {
 
     } else {
       // Create new plan
-      const created = await prisma.pricingPlan.create({
-        data,
-      });
+      const created = await prisma.pricingPlan.create({ data });
 
       if (featuresList.length > 0) {
         await prisma.pricingFeature.createMany({

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { formLimiter } from "@/lib/rate-limit";
+import { InquirySchema } from "@/lib/schemas";
 
 export async function POST(req: Request) {
   try {
@@ -17,14 +18,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const data = await req.json();
+    const raw = await req.json();
+    const parsed = InquirySchema.safeParse(raw);
 
-    if (!data.name?.trim() || !data.phone?.trim() || !data.type?.trim()) {
-      return NextResponse.json(
-        { success: false, error: "Nama, nomor telepon, dan tipe permintaan wajib diisi." },
-        { status: 400 }
-      );
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? "Input tidak valid.";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
+
+    const data = parsed.data;
 
     const inquiry = await prisma.inquiry.create({
       data: {
@@ -34,7 +36,7 @@ export async function POST(req: Request) {
         transactionType: data.transactionType,
         propertyType: data.propertyType,
         location: data.location,
-        budgetOrPrice: data.budgetOrPrice,
+        ...(data.budgetOrPrice !== undefined && { budgetOrPrice: data.budgetOrPrice }),
         status: "NEW",
         details: ""
       },

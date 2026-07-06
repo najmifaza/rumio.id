@@ -8,6 +8,7 @@ import { join } from 'path';
 import sharp from 'sharp';
 import { getServerSession } from "next-auth";
 import { authOptions, requireAdmin } from "@/lib/auth";
+import { SavePropertySchema } from "@/lib/schemas";
 
 export async function deleteProperty(id: string) {
   try {
@@ -109,7 +110,37 @@ export async function saveProperty(formData: FormData, id?: string) {
       featuredImage = finalImages[0].url;
     }
 
-    const title = formData.get("title") as string;
+    // ─── Validate core property fields with Zod ───────────────────────
+    const rawProperty = {
+      title: formData.get("title"),
+      price: formData.get("price"),
+      location: formData.get("location"),
+      propertyType: formData.get("propertyType"),
+      listingType: formData.get("listingType"),
+      condition: formData.get("condition") || undefined,
+      bedrooms: formData.get("bedrooms"),
+      bathrooms: formData.get("bathrooms"),
+      floors: formData.get("floors"),
+      landArea: formData.get("landArea"),
+      buildingArea: formData.get("buildingArea"),
+      electricity: formData.get("electricity"),
+      waterSupply: formData.get("waterSupply") || undefined,
+      facing: formData.get("facing") || undefined,
+      buildYear: formData.get("buildYear"),
+      certificate: formData.get("certificate") || undefined,
+      description: formData.get("description"),
+      mapsUrl: formData.get("mapsUrl") || undefined,
+      status: (formData.get("status") as string) || "AVAILABLE",
+    };
+
+    const parsedProperty = SavePropertySchema.safeParse(rawProperty);
+    if (!parsedProperty.success) {
+      const message = parsedProperty.error.issues[0]?.message ?? "Input properti tidak valid.";
+      return { success: false, error: message };
+    }
+
+    const validatedFields = parsedProperty.data;
+    const title = validatedFields.title;
     let slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
     
     // ISS-03 FIX: Loop deterministik — coba slug-1, slug-2, dst. sampai ditemukan yang benar-benar unik.
@@ -161,24 +192,24 @@ export async function saveProperty(formData: FormData, id?: string) {
     const data = {
       title,
       slug,
-      price: parseFloat(formData.get("price") as string),
-      location: formData.get("location") as string,
-      propertyType: formData.get("propertyType") as string,
-      listingType: formData.get("listingType") as string,
-      condition: formData.get("condition") as string,
-      bedrooms: parseInt(formData.get("bedrooms") as string),
-      bathrooms: parseInt(formData.get("bathrooms") as string),
-      floors: parseInt(formData.get("floors") as string),
-      landArea: parseFloat(formData.get("landArea") as string),
-      buildingArea: parseFloat(formData.get("buildingArea") as string),
-      electricity: parseInt(formData.get("electricity") as string),
-      waterSupply: formData.get("waterSupply") as string,
-      facing: formData.get("facing") as string,
-      buildYear: parseInt(formData.get("buildYear") as string),
-      certificate: formData.get("certificate") as string,
-      description: formData.get("description") as string,
-      mapsUrl: formData.get("mapsUrl") as string,
-      status: (formData.get("status") as string) || "AVAILABLE",
+      price: validatedFields.price,
+      location: validatedFields.location,
+      propertyType: validatedFields.propertyType,
+      listingType: validatedFields.listingType,
+      condition: validatedFields.condition,
+      bedrooms: validatedFields.bedrooms,
+      bathrooms: validatedFields.bathrooms,
+      floors: validatedFields.floors,
+      landArea: validatedFields.landArea,
+      buildingArea: validatedFields.buildingArea,
+      electricity: validatedFields.electricity,
+      waterSupply: validatedFields.waterSupply,
+      facing: validatedFields.facing,
+      buildYear: validatedFields.buildYear,
+      certificate: validatedFields.certificate,
+      description: validatedFields.description,
+      mapsUrl: validatedFields.mapsUrl,
+      status: validatedFields.status,
       featuredImage,
       highlights,
       virtualTourData,

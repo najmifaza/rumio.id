@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { formLimiter } from "@/lib/rate-limit";
+import { ScoutSchema } from "@/lib/schemas";
 
 export async function POST(req: Request) {
   try {
@@ -17,29 +18,32 @@ export async function POST(req: Request) {
     }
 
     const formData = await req.formData();
-    const fullName = formData.get("fullName") as string;
-    const whatsapp = formData.get("whatsapp") as string;
-    const email = formData.get("email") as string;
-    let city = formData.get("city") as string;
-    const district = formData.get("district") as string;
 
-    if (!fullName || !whatsapp || !email || !city) {
-      return NextResponse.json(
-        { success: false, error: "Harap isi semua kolom" },
-        { status: 400 }
-      );
+    const raw = {
+      fullName: formData.get("fullName"),
+      whatsapp: formData.get("whatsapp"),
+      email: formData.get("email"),
+      city: formData.get("city"),
+      district: formData.get("district") || undefined,
+    };
+
+    const parsed = ScoutSchema.safeParse(raw);
+
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? "Input tidak valid.";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
 
-    if (district) {
-      city = `${city} - Kec. ${district}`;
-    }
+    const { fullName, whatsapp, email, city, district } = parsed.data;
+
+    const finalCity = district ? `${city} - Kec. ${district}` : city;
 
     await prisma.propertyScout.create({
       data: {
         fullName,
         whatsapp,
         email,
-        city,
+        city: finalCity,
       },
     });
 
@@ -52,3 +56,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

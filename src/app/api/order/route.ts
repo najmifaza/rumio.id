@@ -5,6 +5,7 @@ import { join } from "path";
 import sharp from "sharp";
 import { headers } from "next/headers";
 import { formLimiter } from "@/lib/rate-limit";
+import { OrderSchema } from "@/lib/schemas";
 
 export async function POST(req: Request) {
   try {
@@ -18,14 +19,28 @@ export async function POST(req: Request) {
 
     const formData = await req.formData();
 
-    const planId = formData.get("planId") as string;
-    const planName = formData.get("planName") as string;
-    const customerName = formData.get("customerName") as string;
-    const whatsapp = formData.get("whatsapp") as string;
-    const propertyType = formData.get("propertyType") as string;
-    const location = formData.get("location") as string;
-    const paymentMethod = formData.get("paymentMethod") as string;
-    const totalPrice = parseFloat(formData.get("totalPrice") as string);
+    // Validate text fields with Zod
+    const rawOrder = {
+      planId: formData.get("planId"),
+      planName: formData.get("planName"),
+      customerName: formData.get("customerName"),
+      whatsapp: formData.get("whatsapp"),
+      propertyType: formData.get("propertyType"),
+      location: formData.get("location"),
+      paymentMethod: formData.get("paymentMethod"),
+      totalPrice: parseFloat(formData.get("totalPrice") as string),
+      addons: (() => {
+        try { return JSON.parse(formData.get("addons") as string || "[]"); } catch { return []; }
+      })(),
+    };
+
+    const parsedOrder = OrderSchema.safeParse(rawOrder);
+    if (!parsedOrder.success) {
+      const message = parsedOrder.error.issues[0]?.message ?? "Input tidak valid.";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
+    }
+
+    const { planId, planName, customerName, whatsapp, propertyType, location, paymentMethod, totalPrice, addons } = parsedOrder.data;
     const addonsJson = formData.get("addons") as string;
     const file = formData.get("proofOfPayment") as File;
 
@@ -69,13 +84,8 @@ export async function POST(req: Request) {
     await writeFile(path, buffer);
     const proofUrl = `/uploads/payments/${fileName}`;
 
-    // Parse addons
-    let addons = [];
-    try {
-      if (addonsJson) addons = JSON.parse(addonsJson);
-    } catch (e) {
-      console.error("Failed to parse addons", e);
-    }
+    // addons already validated and parsed via Zod — use as-is
+    void addonsJson; // kept in scope above for reference
 
     // Save to DB
     const order = await prisma.packageOrder.create({
@@ -89,7 +99,7 @@ export async function POST(req: Request) {
         paymentMethod,
         totalPrice,
         proofUrl,
-        addons,
+        addons: addons as any,
       }
     });
 

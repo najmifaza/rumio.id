@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { CreateUserSchema, ResetPasswordSchema } from "@/lib/schemas";
 
 // Ambil semua user (ADMIN & OWNER)
 export async function getUsers() {
@@ -25,14 +26,19 @@ export async function getUsers() {
 export async function createUser(formData: FormData) {
   await requireAdmin();
 
-  const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const role = (formData.get("role") as string) || "OWNER";
+  const parsed = CreateUserSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    role: formData.get("role") || "OWNER",
+  });
 
-  if (!name || !email || !password) {
-    return { success: false, error: "Semua field wajib diisi." };
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Input tidak valid.";
+    return { success: false, error: message };
   }
+
+  const { name, email, password, role } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -42,7 +48,7 @@ export async function createUser(formData: FormData) {
   const hashedPassword = await bcrypt.hash(password, 12);
 
   await prisma.user.create({
-    data: { name, email, password: hashedPassword, role: role as "ADMIN" | "OWNER" },
+    data: { name, email, password: hashedPassword, role },
   });
 
   revalidatePath("/admin/users");
@@ -53,11 +59,13 @@ export async function createUser(formData: FormData) {
 export async function resetUserPassword(userId: string, newPassword: string) {
   await requireAdmin();
 
-  if (!newPassword || newPassword.length < 6) {
-    return { success: false, error: "Password minimal 6 karakter." };
+  const parsed = ResetPasswordSchema.safeParse({ newPassword });
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Input tidak valid.";
+    return { success: false, error: message };
   }
 
-  const hashedPassword = await bcrypt.hash(newPassword, 12);
+  const hashedPassword = await bcrypt.hash(parsed.data.newPassword, 12);
   await prisma.user.update({
     where: { id: userId },
     data: { password: hashedPassword },
