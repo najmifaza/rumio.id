@@ -6,7 +6,10 @@ import { z } from "zod";
 
 export const InquirySchema = z.object({
   type: z.string().min(1, "Tipe permintaan wajib diisi"),
-  name: z.string().min(2, "Nama minimal 2 karakter").max(100, "Nama terlalu panjang"),
+  name: z
+    .string()
+    .min(2, "Nama minimal 2 karakter")
+    .max(100, "Nama terlalu panjang"),
   phone: z
     .string()
     .min(8, "Nomor telepon minimal 8 digit")
@@ -15,11 +18,14 @@ export const InquirySchema = z.object({
   transactionType: z.string().min(1, "Tipe transaksi wajib diisi"),
   propertyType: z.string().min(1, "Tipe properti wajib diisi"),
   location: z.string().min(2, "Lokasi wajib diisi").max(300),
-  budgetOrPrice: z.string().optional(),  // nullable in Prisma
+  budgetOrPrice: z.string().optional(), // nullable in Prisma
 });
 
 export const ScoutSchema = z.object({
-  fullName: z.string().min(2, "Nama lengkap minimal 2 karakter").max(100, "Nama terlalu panjang"),
+  fullName: z
+    .string()
+    .min(2, "Nama lengkap minimal 2 karakter")
+    .max(100, "Nama terlalu panjang"),
   whatsapp: z
     .string()
     .min(8, "Nomor WhatsApp minimal 8 digit")
@@ -74,7 +80,10 @@ export const ResetPasswordSchema = z.object({
 // ─────────────────────────────────────────────
 
 export const SaveBlogSchema = z.object({
-  title: z.string().min(3, "Judul minimal 3 karakter").max(200, "Judul terlalu panjang"),
+  title: z
+    .string()
+    .min(3, "Judul minimal 3 karakter")
+    .max(200, "Judul terlalu panjang"),
   category: z.string().min(1, "Kategori wajib diisi").max(100),
   content: z.string().min(10, "Konten terlalu pendek"),
   author: z.string().min(2, "Nama penulis minimal 2 karakter").max(100),
@@ -95,7 +104,11 @@ export const SaveAddonSchema = z.object({
     .transform((val) => parseFloat(val.replace(/[^0-9.-]+/g, "")))
     .pipe(z.number().positive("Harga harus lebih dari 0")),
   priceSuffix: z.string().max(50).optional(),
-  imageUrl: z.string().url("URL gambar tidak valid").optional().or(z.literal("")),
+  imageUrl: z
+    .string()
+    .url("URL gambar tidak valid")
+    .optional()
+    .or(z.literal("")),
 });
 
 export const SavePlanSchema = z.object({
@@ -155,9 +168,18 @@ export const SavePropertySchema = z.object({
   buildYear: z
     .string()
     .transform((v) => parseInt(v))
-    .pipe(z.number().int().min(1900).max(new Date().getFullYear() + 1)),
+    .pipe(
+      z
+        .number()
+        .int()
+        .min(1900)
+        .max(new Date().getFullYear() + 1),
+    ),
   certificate: z.string().default(""),
   description: z.string().min(20, "Deskripsi minimal 20 karakter"),
   mapsUrl: z.string().default(""),
-  status: z.enum(["AVAILABLE", "SOLD", "RENTED"]).optional().default("AVAILABLE"),
+  status: z
+    .enum(["AVAILABLE", "SOLD", "RENTED"])
+    .optional()
+    .default("AVAILABLE"),
 });
