@@ -62,6 +62,8 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
       : data.url || "/placeholder-image.jpg";
 
     let isMounted = true;
+    // Track viewer locally so cleanup can always reach it,
+    // even if it was created between isMounted=false and viewerRef assignment.
     let localViewer: Viewer | null = null;
 
     // Defer initialization to avoid React Strict Mode race condition
@@ -70,7 +72,7 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
       if (!isMounted || !containerRef.current) return;
 
       // Initialize the viewer
-      localViewer = new Viewer({
+      const viewer = new Viewer({
         container: containerRef.current,
         panorama: initialPanorama,
         navbar: ["zoom", "fullscreen"],
@@ -108,16 +110,22 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
           : [],
       });
 
-      viewerRef.current = localViewer;
+      // Store in both local var and ref atomically before any async continuation
+      localViewer = viewer;
+      viewerRef.current = viewer;
     }, 100);
 
     // Cleanup on unmount
     return () => {
       isMounted = false;
       clearTimeout(timer);
-      if (viewerRef.current) {
+      // Use localViewer as fallback: handles the rare case where the viewer was
+      // instantiated inside the setTimeout but viewerRef was already nulled
+      // by a concurrent cleanup invocation (React Strict Mode double-effect).
+      const toDestroy = viewerRef.current ?? localViewer;
+      if (toDestroy) {
         try {
-          viewerRef.current.destroy();
+          toDestroy.destroy();
         } catch (e: any) {
           if (e?.message?.includes("clear")) {
             console.warn("Caught PhotoSphereViewer destroy clear error.");
@@ -126,6 +134,7 @@ export default function VirtualTourViewer({ data }: VirtualTourViewerProps) {
           }
         }
         viewerRef.current = null;
+        localViewer = null;
       }
     };
   }, [data]);

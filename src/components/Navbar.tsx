@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle, Search } from "lucide-react";
@@ -49,7 +49,7 @@ export default function Navbar({
     return null;
   }
 
-  const navLinks = [
+  const navLinks = useMemo(() => [
     { name: "Beranda", href: "/", isActive: pathname === "/" },
     {
       name: "Properti",
@@ -72,7 +72,7 @@ export default function Navbar({
       href: "/property-scout",
       isActive: pathname.startsWith("/property-scout"),
     },
-  ];
+  ], [pathname]);
 
   return (
     <div

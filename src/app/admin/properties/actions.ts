@@ -55,6 +55,12 @@ export async function deleteProperty(id: string) {
 
 async function handleImageUpload(file: File | null) {
   if (!file || file.size === 0) return null;
+  
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new Error('Tipe file tidak diizinkan');
+  }
+
   const bytes = await file.arrayBuffer();
   let buffer = Buffer.from(bytes);
   
@@ -222,7 +228,16 @@ export async function saveProperty(formData: FormData, id?: string) {
         ? { ...data, ownerId: formOwnerId }
         : data;
 
-      await prisma.property.update({ where: { id }, data: updateData });
+      try {
+        await prisma.property.update({ where: { id }, data: updateData });
+      } catch (e: any) {
+        if (e.code === 'P2002') {
+          updateData.slug = `${updateData.slug}-${Date.now()}`;
+          await prisma.property.update({ where: { id }, data: updateData });
+        } else {
+          throw e;
+        }
+      }
       
       // ISS-01 FIX: Hapus SEMUA gambar lama sebelum insert batch baru.
       await prisma.propertyImage.deleteMany({ where: { propertyId: id } });
@@ -237,10 +252,24 @@ export async function saveProperty(formData: FormData, id?: string) {
       // ownerId dari pilihan dropdown; fallback ke session.user.id jika kosong
       const formOwnerId = (formData.get("ownerId") as string) || session.user.id;
 
-      // Create new
-      const newProperty = await prisma.property.create({ 
-        data: { ...data, ownerId: formOwnerId } 
-      });
+      // Create new — wrap in try/catch to handle the rare TOCTOU slug collision
+      // that survives the while-loop above (concurrent requests).
+      let newProperty: Awaited<ReturnType<typeof prisma.property.create>>;
+      try {
+        newProperty = await prisma.property.create({ 
+          data: { ...data, ownerId: formOwnerId } 
+        });
+      } catch (e: any) {
+        if (e.code === 'P2002') {
+          // Slug collision survived the pre-check — append timestamp and retry once
+          data.slug = `${data.slug}-${Date.now()}`;
+          newProperty = await prisma.property.create({ 
+            data: { ...data, ownerId: formOwnerId } 
+          });
+        } else {
+          throw e;
+        }
+      }
       
       await prisma.propertyImage.createMany({
         data: finalImages.map(img => ({

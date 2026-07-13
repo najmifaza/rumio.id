@@ -50,6 +50,14 @@ export default function FormPropertyScout() {
   }, []);
 
   const availableDistricts = selectedCity ? getKecamatan(selectedCity) : [];
+  
+  const filteredCities = daftarKabupatenKota.filter((c) =>
+    c.toLowerCase().includes(cityQuery.toLowerCase())
+  );
+  
+  const filteredDistricts = availableDistricts.filter((d: string) =>
+    d.toLowerCase().includes(districtQuery.toLowerCase())
+  );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -247,16 +255,8 @@ export default function FormPropertyScout() {
                             scrollbarColor: "#475569 transparent",
                           }}
                         >
-                          {daftarKabupatenKota.filter((c) =>
-                            c.toLowerCase().includes(cityQuery.toLowerCase()),
-                          ).length > 0 ? (
-                            daftarKabupatenKota
-                              .filter((c) =>
-                                c
-                                  .toLowerCase()
-                                  .includes(cityQuery.toLowerCase()),
-                              )
-                              .map((city) => (
+                          {filteredCities.length > 0 ? (
+                            filteredCities.map((city) => (
                                 <div
                                   key={city}
                                   className={`px-4 py-2.5 cursor-pointer transition-colors ${selectedCity === city ? "bg-amber-500/20 text-amber-500" : "text-slate-300 hover:bg-white/5"}`}
@@ -349,18 +349,8 @@ export default function FormPropertyScout() {
                             scrollbarColor: "#475569 transparent",
                           }}
                         >
-                          {availableDistricts.filter((d: string) =>
-                            d
-                              .toLowerCase()
-                              .includes(districtQuery.toLowerCase()),
-                          ).length > 0 ? (
-                            availableDistricts
-                              .filter((d: string) =>
-                                d
-                                  .toLowerCase()
-                                  .includes(districtQuery.toLowerCase()),
-                              )
-                              .map((district: string) => (
+                          {filteredDistricts.length > 0 ? (
+                            filteredDistricts.map((district: string) => (
                                 <div
                                   key={district}
                                   className={`px-4 py-2.5 cursor-pointer transition-colors ${selectedDistrict === district ? "bg-amber-500/20 text-amber-500" : "text-slate-300 hover:bg-white/5"}`}

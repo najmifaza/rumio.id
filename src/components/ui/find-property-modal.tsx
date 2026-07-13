@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Search } from "lucide-react";
 
 interface FindPropertyModalProps {
@@ -21,6 +21,13 @@ export default function FindPropertyModal({
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -56,26 +63,26 @@ export default function FindPropertyModal({
       });
       const res = await response.json();
 
-    setIsSubmitting(false);
-
-    if (res.success) {
-      setSuccess(true);
-      setTimeout(() => {
-        setSuccess(false);
-        onClose();
-        // Reset form
-        setName("");
-        setPhone("");
-        setLocation("");
-        setMinPrice("");
-        setMaxPrice("");
-        setPropertyType([]);
-      }, 3000);
-    } else {
-      alert(res.error || "Terjadi kesalahan.");
-    }
+      if (res.success) {
+        setSuccess(true);
+        timerRef.current = setTimeout(() => {
+          setSuccess(false);
+          onClose();
+          // Reset form
+          setName("");
+          setPhone("");
+          setLocation("");
+          setMinPrice("");
+          setMaxPrice("");
+          setPropertyType([]);
+        }, 3000);
+      } else {
+        alert(res.error || "Terjadi kesalahan.");
+      }
     } catch (error) {
       alert("Terjadi kesalahan. Silakan coba lagi.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

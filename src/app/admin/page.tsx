@@ -16,7 +16,10 @@ export default async function AdminDashboard({
   const userId = session?.user?.id as string;
 
   const resolvedParams = await searchParams;
-  const range = typeof resolvedParams.range === "string" ? parseInt(resolvedParams.range) : 6;
+  const parsedRange = parseInt(resolvedParams.range as string);
+  const range = !isNaN(parsedRange) && parsedRange > 0 && parsedRange <= 24 
+    ? parsedRange 
+    : 6;
 
   // Kondisi filter: ADMIN lihat semua, OWNER hanya miliknya
   const propertyWhere = isAdmin ? {} : { ownerId: userId };

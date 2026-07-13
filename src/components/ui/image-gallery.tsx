@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import Icon360 from "./Icon360";
 
@@ -19,6 +19,14 @@ export default function ImageGallery({
 }: ImageGalleryProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    return () => {
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
+    };
+  }, []);
 
   const openLightbox = (index: number) => {
     setCurrentIndex(index);

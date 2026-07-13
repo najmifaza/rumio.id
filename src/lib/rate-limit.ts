@@ -31,24 +31,19 @@ interface RateLimitResult {
 export function createRateLimiter({ maxRequests, windowMs }: RateLimiterOptions) {
   const store = new Map<string, RateLimitEntry>();
 
-  // Cleanup expired entries every 60 seconds to prevent memory leaks
-  const cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of store) {
-      if (now > entry.resetAt) {
-        store.delete(key);
-      }
-    }
-  }, 60_000);
-
-  // Allow garbage collection of the interval in serverless environments
-  if (cleanupInterval.unref) {
-    cleanupInterval.unref();
-  }
-
   return {
     check(identifier: string): RateLimitResult {
       const now = Date.now();
+      
+      // Cleanup expired entries occasionally to prevent memory leaks (~1% chance per check)
+      if (Math.random() < 0.01) {
+        for (const [key, entry] of store) {
+          if (now > entry.resetAt) {
+            store.delete(key);
+          }
+        }
+      }
+
       const entry = store.get(identifier);
 
       // No existing entry or window expired — create fresh entry
