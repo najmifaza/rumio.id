@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { Building2, Eye, FileText, Users, TrendingUp } from "lucide-react";
+import { Building2, Eye, FileText, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import LeadsChart from "@/components/admin/LeadsChart";
 

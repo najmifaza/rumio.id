@@ -47,41 +47,57 @@ export async function saveBlog(formData: FormData, id?: string) {
 
     const { title, category, content, author, slug: customSlug, featuredImage: featuredImageInput } = parsed.data;
 
-    let slug = customSlug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-    
-    const existingSlug = await prisma.blog.findFirst({
-      where: {
-        slug,
-        ...(id ? { id: { not: id } } : {}),
-      },
-      select: { id: true }, // Optimasi performa
-    });
-
-    if (existingSlug) {
-      const randomSuffix = Math.random().toString(36).substring(2, 6);
-      slug = `${slug}-${randomSuffix}`;
-    }
-
+    const baseSlug = customSlug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
     const featuredImage = featuredImageInput || "/placeholder-image.jpg";
 
     const payload = {
       title,
-      slug,
       category,
       content: sanitizeBlogContent(content),
       author,
       featuredImage,
     };
 
+    const performSave = (slugToUse: string) => {
+      if (id) {
+        return prisma.blog.update({
+          where: { id },
+          data: { ...payload, slug: slugToUse },
+        });
+      } else {
+        return prisma.blog.create({
+          data: { ...payload, slug: slugToUse },
+        });
+      }
+    };
+
+    let slug = baseSlug;
     if (id) {
-      await prisma.blog.update({
-        where: { id },
-        data: payload,
-      });
+      try {
+        await performSave(slug);
+      } catch (e: any) {
+        if (e.code === 'P2002') {
+          slug = `${baseSlug}-${Date.now()}`;
+          await performSave(slug);
+        } else {
+          throw e;
+        }
+      }
     } else {
-      await prisma.blog.create({
-        data: payload,
-      });
+      let counter = 1;
+      while (true) {
+        try {
+          await performSave(slug);
+          break;
+        } catch (e: any) {
+          if (e.code === 'P2002') {
+            slug = `${baseSlug}-${counter}`;
+            counter++;
+          } else {
+            throw e;
+          }
+        }
+      }
     }
 
     revalidatePath("/admin/blogs");

@@ -26,17 +26,7 @@ export function sanitizeBlogContent(html: string): string {
       img: ["src", "alt", "title", "width", "height", "loading"],
       td: ["colspan", "rowspan"],
       th: ["colspan", "rowspan"],
-      span: ["style"],
-      p: ["style"],
-      h1: ["style"],
-      h2: ["style"],
-      h3: ["style"],
       "*": ["class", "id"],
-    },
-    allowedStyles: {
-      "*": {
-        "text-align": [/^left$/, /^right$/, /^center$/, /^justify$/],
-      },
     },
     // Force all links to open in new tab safely
     transformTags: {
