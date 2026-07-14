@@ -2,11 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
-import { writeFile, mkdir, unlink } from "fs/promises";
+import { unlink } from "fs/promises";
 import { join } from "path";
-import sharp from "sharp";
-import { headers } from "next/headers";
-import { formLimiter } from "@/lib/rate-limit";
 
 export async function updateOrderStatus(id: string, status: string) {
   try {
