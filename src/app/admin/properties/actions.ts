@@ -157,7 +157,7 @@ export async function saveProperty(formData: FormData, id?: string) {
     
     // Process Highlights
     const highlightsStr = formData.get("highlights") as string;
-    let highlights = null;
+    let highlights: any = Prisma.JsonNull;
     if (highlightsStr) {
       try { 
         const parsed = JSON.parse(highlightsStr);

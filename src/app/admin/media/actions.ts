@@ -32,7 +32,7 @@ export async function uploadMedia(formData: FormData) {
     // Save to DB
     const asset = await prisma.mediaAsset.create({
       data: {
-        fileName: uploadResult.fileName,
+        filename: uploadResult.fileName,
         url: uploadResult.url,
         mimeType: uploadResult.mimeType,
         size: uploadResult.size
