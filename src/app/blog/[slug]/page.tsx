@@ -6,7 +6,7 @@ import CtaHelpCard from "@/components/ui/cta-help-card";
 import { Clock, Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { sanitizeBlogContent } from "@/lib/sanitize";
-
+import BlogViewTracker from "@/components/BlogViewTracker";
 // This allows Next.js to generate static pages for each blog
 export async function generateStaticParams() {
   const { data: blogs } = await getAllBlogs({ limit: 1000 });
@@ -96,6 +96,7 @@ export default async function BlogDetailPage({
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20 font-sans pt-28">
+      <BlogViewTracker slug={slug} />
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-0">
         {/* Back Link & Breadcrumbs */}
         <div className="mb-8">

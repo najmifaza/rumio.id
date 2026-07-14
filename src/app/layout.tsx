@@ -81,12 +81,13 @@ export default async function RootLayout({
   // Pastikan format nomor yang bisa dipakai untuk link (hilangkan karakter non-angka)
   const waNumber = waNumberRaw.replace(/[^0-9]/g, "");
 
-  const gaId = data?.tracking_google_analytics;
-  const pixelId = data?.tracking_meta_pixel;
+  // Sanitize tracking IDs to prevent XSS
+  const gaId = data?.tracking_google_analytics?.replace(/[^a-zA-Z0-9-]/g, "");
+  const pixelId = data?.tracking_meta_pixel?.replace(/[^a-zA-Z0-9-]/g, "");
 
   return (
     <html
-      lang="en"
+      lang="id"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col relative font-sans text-slate-900 bg-white">

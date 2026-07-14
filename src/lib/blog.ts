@@ -85,11 +85,7 @@ export async function getBlogData(slug: string): Promise<BlogData | null> {
 
   if (!blog) return null;
 
-  // Update view count
-  await prisma.blog.update({
-    where: { id: blog.id },
-    data: { viewCount: { increment: 1 } }
-  });
+
 
   return {
     slug: blog.slug,

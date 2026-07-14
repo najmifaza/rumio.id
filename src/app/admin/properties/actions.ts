@@ -228,56 +228,53 @@ export async function saveProperty(formData: FormData, id?: string) {
         ? { ...data, ownerId: formOwnerId }
         : data;
 
+      const performUpdate = (slugToUse: string) => 
+        prisma.property.update({
+          where: { id },
+          data: {
+            ...updateData,
+            slug: slugToUse,
+            images: {
+              deleteMany: {},
+              create: finalImages.map(img => ({ imageUrl: img.url, caption: img.caption }))
+            }
+          }
+        });
+
       try {
-        await prisma.property.update({ where: { id }, data: updateData });
+        await performUpdate(updateData.slug);
       } catch (e: any) {
         if (e.code === 'P2002') {
-          updateData.slug = `${updateData.slug}-${Date.now()}`;
-          await prisma.property.update({ where: { id }, data: updateData });
+          await performUpdate(`${updateData.slug}-${Date.now()}`);
         } else {
           throw e;
         }
       }
-      
-      // ISS-01 FIX: Hapus SEMUA gambar lama sebelum insert batch baru.
-      await prisma.propertyImage.deleteMany({ where: { propertyId: id } });
-      await prisma.propertyImage.createMany({
-        data: finalImages.map(img => ({
-          propertyId: id,
-          imageUrl: img.url,
-          caption: img.caption,
-        })),
-      });
     } else {
       // ownerId dari pilihan dropdown; fallback ke session.user.id jika kosong
       const formOwnerId = (formData.get("ownerId") as string) || session.user.id;
 
-      // Create new — wrap in try/catch to handle the rare TOCTOU slug collision
-      // that survives the while-loop above (concurrent requests).
-      let newProperty: Awaited<ReturnType<typeof prisma.property.create>>;
-      try {
-        newProperty = await prisma.property.create({ 
-          data: { ...data, ownerId: formOwnerId } 
+      const performCreate = (slugToUse: string) => 
+        prisma.property.create({
+          data: {
+            ...data,
+            ownerId: formOwnerId,
+            slug: slugToUse,
+            images: {
+              create: finalImages.map(img => ({ imageUrl: img.url, caption: img.caption }))
+            }
+          }
         });
+
+      try {
+        await performCreate(data.slug);
       } catch (e: any) {
         if (e.code === 'P2002') {
-          // Slug collision survived the pre-check — append timestamp and retry once
-          data.slug = `${data.slug}-${Date.now()}`;
-          newProperty = await prisma.property.create({ 
-            data: { ...data, ownerId: formOwnerId } 
-          });
+          await performCreate(`${data.slug}-${Date.now()}`);
         } else {
           throw e;
         }
       }
-      
-      await prisma.propertyImage.createMany({
-        data: finalImages.map(img => ({
-          propertyId: newProperty.id,
-          imageUrl: img.url,
-          caption: img.caption,
-        })),
-      });
     }
 
     revalidatePath("/admin/properties", "layout");
