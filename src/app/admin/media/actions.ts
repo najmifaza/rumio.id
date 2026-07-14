@@ -2,9 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir, unlink } from "fs/promises";
+import { unlink } from "fs/promises";
 import { join } from "path";
-import sharp from "sharp";
+import { processAndSaveImage } from "@/lib/upload";
 import { requireAdmin } from "@/lib/auth";
 
 
@@ -27,42 +27,15 @@ export async function uploadMedia(formData: FormData) {
       return { success: false, error: "Format file tidak didukung" };
     }
 
-    const bytes = await file.arrayBuffer();
-    let buffer = Buffer.from(bytes);
-    
-    // Create unique filename
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    let originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    let mimeType = file.type;
-    let size = file.size;
-
-    if (file.type.startsWith('image/') && !file.type.includes('svg')) {
-      buffer = (await sharp(buffer).webp({ quality: 80 }).toBuffer()) as any;
-      originalName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
-      mimeType = 'image/webp';
-      size = buffer.length;
-    }
-    
-    const fileName = `${uniqueSuffix}-${originalName}`;
-    
-    const uploadDir = join(process.cwd(), "public/uploads/media");
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (e: unknown) {
-      if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
-    }
-
-    const path = join(uploadDir, fileName);
-    await writeFile(path, buffer);
-    const url = `/uploads/media/${fileName}`;
+    const uploadResult = await processAndSaveImage(file, "media");
 
     // Save to DB
     const asset = await prisma.mediaAsset.create({
       data: {
-        filename: originalName,
-        url,
-        mimeType,
-        size,
+        fileName: uploadResult.fileName,
+        url: uploadResult.url,
+        mimeType: uploadResult.mimeType,
+        size: uploadResult.size
       }
     });
 

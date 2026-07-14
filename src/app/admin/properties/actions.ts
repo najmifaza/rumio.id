@@ -3,9 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir, unlink } from 'fs/promises';
+import { unlink } from 'fs/promises';
 import { join } from 'path';
-import sharp from 'sharp';
+import { processAndSaveImage } from '@/lib/upload';
 import { getServerSession } from "next-auth";
 import { authOptions, requireAdmin } from "@/lib/auth";
 import { SavePropertySchema } from "@/lib/schemas";
@@ -67,26 +67,8 @@ async function handleImageUpload(file: File | null) {
     throw new Error('Tipe file tidak diizinkan');
   }
 
-  const bytes = await file.arrayBuffer();
-  let buffer = Buffer.from(bytes);
-  
-  let originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-  
-  buffer = (await sharp(buffer).webp({ quality: 80 }).toBuffer()) as any;
-  originalName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
-
-  const fileName = `${Date.now()}-${originalName}`;
-  const uploadDir = join(process.cwd(), 'public/uploads');
-  // ISS-14 FIX: Hanya abaikan error EEXIST (folder sudah ada), lempar ulang error lain
-  try { 
-    await mkdir(uploadDir, { recursive: true }); 
-  } catch (e: unknown) {
-    if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e;
-  }
-
-  const path = join(uploadDir, fileName);
-  await writeFile(path, buffer);
-  return `/uploads/${fileName}`;
+  const result = await processAndSaveImage(file);
+  return result.url;
 }
 
 export async function saveProperty(formData: FormData, id?: string) {

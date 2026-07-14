@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import sharp from "sharp";
+import { processAndSaveImage } from "@/lib/upload";
 import { headers } from "next/headers";
 import { formLimiter } from "@/lib/rate-limit";
 import { OrderSchema } from "@/lib/schemas";
@@ -60,29 +58,8 @@ export async function POST(req: Request) {
     }
 
     // Process file upload
-    const bytes = await file.arrayBuffer();
-    let buffer = Buffer.from(bytes);
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    let originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    
-    // Optimize image if it's an image
-    if (file.type.startsWith('image/') && !file.type.includes('svg')) {
-      buffer = (await sharp(buffer).webp({ quality: 80 }).toBuffer()) as any;
-      originalName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
-    }
-
-    const fileName = `${uniqueSuffix}-${originalName}`;
-    const uploadDir = join(process.cwd(), "public/uploads/payments");
-    
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (e: any) {
-      if (e.code !== "EEXIST") throw e;
-    }
-
-    const path = join(uploadDir, fileName);
-    await writeFile(path, buffer);
-    const proofUrl = `/uploads/payments/${fileName}`;
+    const uploadResult = await processAndSaveImage(file, "payments");
+    const proofUrl = uploadResult.url;
 
     // addons already validated and parsed via Zod — use as-is
     void addonsJson; // kept in scope above for reference
