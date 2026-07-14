@@ -91,7 +91,15 @@ async function handleImageUpload(file: File | null) {
 
 export async function saveProperty(formData: FormData, id?: string) {
   try {
-    const session = await requireAdmin();
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    if (id && session.user.role !== "ADMIN") {
+      const existingProp = await prisma.property.findUnique({ where: { id }, select: { ownerId: true } });
+      if (existingProp?.ownerId !== session.user.id) {
+        return { success: false, error: "Anda tidak memiliki izin untuk mengubah properti ini." };
+      }
+    }
 
     // Handle multiple images
     const imageCount = parseInt(formData.get("imageCount") as string) || 0;
@@ -238,10 +246,11 @@ export async function saveProperty(formData: FormData, id?: string) {
 
     if (id) {
       // Update existing — termasuk update ownerId jika ADMIN mengubah assignment
-      const formOwnerId = formData.get("ownerId") as string | null;
-      const updateData = formOwnerId
-        ? { ...data, ownerId: formOwnerId }
-        : data;
+      let updateData: any = { ...data };
+      if (session.user.role === "ADMIN") {
+        const formOwnerId = formData.get("ownerId") as string | null;
+        if (formOwnerId) updateData.ownerId = formOwnerId;
+      }
 
       const performUpdate = (slugToUse: string) => 
         prisma.property.update({
@@ -266,8 +275,11 @@ export async function saveProperty(formData: FormData, id?: string) {
         }
       }
     } else {
-      // ownerId dari pilihan dropdown; fallback ke session.user.id jika kosong
-      const formOwnerId = (formData.get("ownerId") as string) || session.user.id;
+      // ownerId dari pilihan dropdown (hanya admin); fallback ke session.user.id
+      let formOwnerId = session.user.id;
+      if (session.user.role === "ADMIN") {
+        formOwnerId = (formData.get("ownerId") as string) || session.user.id;
+      }
 
       const performCreate = (slugToUse: string) => 
         prisma.property.create({
