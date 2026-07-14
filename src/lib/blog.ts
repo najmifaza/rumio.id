@@ -59,17 +59,21 @@ export async function getAllBlogs({
     prisma.blog.count({ where })
   ]);
 
-  const data = blogs.map(blog => ({
-    slug: blog.slug,
-    title: blog.title,
-    category: blog.category,
-    date: blog.createdAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-    readTime: `${Math.max(1, Math.ceil(blog.content.length / 1000))} Min Read`,
-    image: blog.featuredImage || "/placeholder-image.jpg",
-    description: stripHtml(blog.content).substring(0, 150) + "...",
-    author: blog.author,
-    viewCount: blog.viewCount,
-  }));
+  const data = blogs.map(blog => {
+    const plainText = stripHtml(blog.content);
+    const wordCount = plainText.trim().split(/\s+/).length;
+    return {
+      slug: blog.slug,
+      title: blog.title,
+      category: blog.category,
+      date: blog.createdAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      readTime: `${Math.max(1, Math.ceil(wordCount / 225))} Min Read`,
+      image: blog.featuredImage || "/placeholder-image.jpg",
+      description: plainText.substring(0, 150) + "...",
+      author: blog.author,
+      viewCount: blog.viewCount,
+    };
+  });
 
   return {
     data,
@@ -87,14 +91,17 @@ export async function getBlogData(slug: string): Promise<BlogData | null> {
 
 
 
+  const plainText = stripHtml(blog.content);
+  const wordCount = plainText.trim().split(/\s+/).length;
+
   return {
     slug: blog.slug,
     title: blog.title,
     category: blog.category,
     date: blog.createdAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-    readTime: `${Math.max(1, Math.ceil(blog.content.length / 1000))} Min Read`,
+    readTime: `${Math.max(1, Math.ceil(wordCount / 225))} Min Read`,
     image: blog.featuredImage || "/placeholder-image.jpg",
-    description: stripHtml(blog.content).substring(0, 150) + "...",
+    description: plainText.substring(0, 150) + "...",
     content: blog.content,
     author: blog.author,
     viewCount: blog.viewCount,
