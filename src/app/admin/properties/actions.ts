@@ -57,6 +57,11 @@ export async function deleteProperty(id: string) {
 async function handleImageUpload(file: File | null) {
   if (!file || file.size === 0) return null;
   
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error('Ukuran file maksimal 10MB');
+  }
+
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
   if (!ALLOWED_TYPES.includes(file.type)) {
     throw new Error('Tipe file tidak diizinkan');
