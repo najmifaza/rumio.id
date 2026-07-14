@@ -85,16 +85,24 @@ export default async function AdminDashboard({
       prisma.packageOrder.findMany({ where: { createdAt: { gte: startDate } }, select: { createdAt: true } }),
     ]);
 
+    const chartDataMap = new Map();
+    leadsChartData.forEach(d => {
+      chartDataMap.set(`${d.year}-${d.month}`, d);
+    });
+
     inquiries.forEach(i => {
-      const match = leadsChartData.find(d => d.month === i.createdAt.getMonth() && d.year === i.createdAt.getFullYear());
+      const key = `${i.createdAt.getFullYear()}-${i.createdAt.getMonth()}`;
+      const match = chartDataMap.get(key);
       if (match) match.inquiries += 1;
     });
     scouts.forEach(s => {
-      const match = leadsChartData.find(d => d.month === s.createdAt.getMonth() && d.year === s.createdAt.getFullYear());
+      const key = `${s.createdAt.getFullYear()}-${s.createdAt.getMonth()}`;
+      const match = chartDataMap.get(key);
       if (match) match.scouts += 1;
     });
     orders.forEach(o => {
-      const match = leadsChartData.find(d => d.month === o.createdAt.getMonth() && d.year === o.createdAt.getFullYear());
+      const key = `${o.createdAt.getFullYear()}-${o.createdAt.getMonth()}`;
+      const match = chartDataMap.get(key);
       if (match) match.orders += 1;
     });
   }
