@@ -51,7 +51,7 @@ export const OrderSchema = z.object({
   totalPrice: z
     .number({ message: "Harga harus berupa angka" })
     .positive("Harga harus lebih dari 0"),
-  addons: z.array(z.any()).optional().default([]),
+  addons: z.array(z.string()).optional().default([]),
 });
 
 // ─────────────────────────────────────────────
