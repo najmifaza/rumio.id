@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { getSettings } from "@/app/admin/settings/actions";
+import { getSettings } from "@/lib/settings";
 
 export default async function CtaHelpCard() {
   const { data } = await getSettings(["contact_whatsapp"]);

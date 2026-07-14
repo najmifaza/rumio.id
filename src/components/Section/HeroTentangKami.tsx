@@ -2,7 +2,7 @@ import { ArrowRight } from "lucide-react";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { getSettings } from "@/app/admin/settings/actions";
+import { getSettings } from "@/lib/settings";
 
 export default async function HeroTentangKami() {
   const { data } = await getSettings(["contact_whatsapp"]);

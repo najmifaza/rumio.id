@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { formatPriceFull } from "@/lib/format";
 import PricingCardsWrapper from "./PricingCardsWrapper";
-import { getSettings } from "@/app/admin/settings/actions";
+import { getSettings } from "@/lib/settings";
 
 const IconMap: Record<string, any> = {
   Send,

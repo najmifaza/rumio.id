@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { getSettings } from "@/app/admin/settings/actions";
+import { getSettings } from "@/lib/settings";
 
 export default async function CtaRumio() {
   const { data } = await getSettings(["contact_whatsapp"]);

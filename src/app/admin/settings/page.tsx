@@ -1,4 +1,4 @@
-import { getSettings } from "./actions";
+import { getSettings } from "@/lib/settings";
 import SettingsForm, { SettingField } from "@/components/admin/SettingsForm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

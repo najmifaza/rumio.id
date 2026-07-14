@@ -19,7 +19,7 @@ import ImageGallery from "@/components/ui/image-gallery";
 import Icon360 from "@/components/ui/Icon360";
 import VirtualTourViewer, { VirtualTourData } from "@/components/ui/VirtualTourViewer";
 import { formatPriceFull, formatKPREstimate } from "@/lib/format";
-import { getSettings } from "@/app/admin/settings/actions";
+import { getSettings } from "@/lib/settings";
 import WhatsAppBookingButton from "@/components/WhatsAppBookingButton";
 
 const stripHtml = (html: string) => {
