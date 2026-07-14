@@ -67,10 +67,8 @@ async function handleImageUpload(file: File | null) {
   
   let originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
   
-  if (file.type.startsWith('image/') && !file.type.includes('svg')) {
-    buffer = (await sharp(buffer).webp({ quality: 80 }).toBuffer()) as any;
-    originalName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
-  }
+  buffer = (await sharp(buffer).webp({ quality: 80 }).toBuffer()) as any;
+  originalName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
 
   const fileName = `${Date.now()}-${originalName}`;
   const uploadDir = join(process.cwd(), 'public/uploads');
