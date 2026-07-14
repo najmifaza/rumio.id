@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { X, Check, Upload, Building, MapPin, CreditCard, Loader2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/Toast";
@@ -39,12 +39,6 @@ export default function OrderPackageModal({
   const [isCopied, setIsCopied] = useState(false);
   const { showToast } = useToast();
 
-  const handleCopy = () => {
-    const account = paymentSettings.payment_bank_account || "1234 5678 90";
-    navigator.clipboard.writeText(account);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
-  };
 
   if (!isOpen || !selectedPlan) return null;
 
@@ -52,6 +46,23 @@ export default function OrderPackageModal({
     const addon = addons.find(a => a.id === addonId);
     return sum + (addon ? addon.price : 0);
   }, 0);
+
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // M-7 FIX: Cleanup timeout on unmount to prevent state update on unmounted component
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
+
+  const handleCopy = () => {
+    const account = paymentSettings.payment_bank_account || "1234 5678 90";
+    navigator.clipboard.writeText(account);
+    setIsCopied(true);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setIsCopied(false), 2000);
+  };
 
   const totalPrice = selectedPlan.price + totalAddonsPrice;
 
