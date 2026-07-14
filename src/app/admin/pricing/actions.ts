@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { SaveAddonSchema, SavePlanSchema } from "@/lib/schemas";
+import { z } from "zod";
 
 export async function saveAddon(formData: FormData, id?: string) {
   try {
@@ -81,7 +82,16 @@ export async function savePlan(formData: FormData, id?: string) {
     const { name, description, price, icon, isPopular, features: featuresJson } = parsed.data;
 
     // Process features
-    const featuresList = featuresJson ? JSON.parse(featuresJson) : [];
+    let featuresList: { text: string }[] = [];
+    if (featuresJson) {
+      try {
+        const parsedJson = JSON.parse(featuresJson);
+        const featureSchema = z.array(z.object({ text: z.string() }).passthrough());
+        featuresList = featureSchema.parse(parsedJson);
+      } catch (e) {
+        return { success: false, error: "Format fitur tidak valid." };
+      }
+    }
 
     const data = {
       name,
@@ -96,13 +106,14 @@ export async function savePlan(formData: FormData, id?: string) {
       await prisma.pricingPlan.update({ where: { id }, data });
 
       const existingFeatures = await prisma.pricingFeature.findMany({ where: { planId: id } });
+      const existingFeaturesMap = new Map(existingFeatures.map(f => [f.text, f]));
       
       // Menggunakan Prisma Transaction dan createMany untuk mencegah Data Orphan dan N+1 problem
       await prisma.$transaction([
         prisma.pricingFeature.deleteMany({ where: { planId: id } }),
         prisma.pricingFeature.createMany({
           data: featuresList.map((feat: any, i: number) => {
-            const existing = existingFeatures.find(e => e.text === feat.text);
+            const existing = existingFeaturesMap.get(feat.text);
             return {
               planId: id,
               text: feat.text,

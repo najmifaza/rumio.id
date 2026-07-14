@@ -9,6 +9,7 @@ import sharp from 'sharp';
 import { getServerSession } from "next-auth";
 import { authOptions, requireAdmin } from "@/lib/auth";
 import { SavePropertySchema } from "@/lib/schemas";
+import { z } from "zod";
 
 export async function deleteProperty(id: string) {
   try {
@@ -165,21 +166,31 @@ export async function saveProperty(formData: FormData, id?: string) {
     const highlightsStr = formData.get("highlights") as string;
     let highlights = null;
     if (highlightsStr) {
-      try { highlights = JSON.parse(highlightsStr); } catch {}
+      try { 
+        const parsed = JSON.parse(highlightsStr);
+        highlights = z.array(z.string()).parse(parsed);
+      } catch {
+        return { success: false, error: "Format highlights tidak valid." };
+      }
     }
 
     const virtualTourDataJson = formData.get("virtualTourDataJson") as string;
-    
-    type VirtualTourNode = { id: string; panorama: string; [key: string]: unknown };
-    type VirtualTourParsed = { nodes?: VirtualTourNode[]; [key: string]: unknown };
     
     let virtualTourData: any = Prisma.JsonNull; // Gunakan Prisma.JsonNull agar Prisma menghapusnya dari DB jika kosong
     
     if (virtualTourDataJson) {
       try { 
-        const parsed = JSON.parse(virtualTourDataJson) as VirtualTourParsed;
-        if (parsed && Array.isArray(parsed.nodes)) {
-          for (const node of parsed.nodes) {
+        const parsed = JSON.parse(virtualTourDataJson);
+        const VirtualTourSchema = z.object({
+          nodes: z.array(z.object({
+            id: z.string(),
+            panorama: z.string().optional()
+          }).passthrough()).optional()
+        }).passthrough();
+        
+        const validated = VirtualTourSchema.parse(parsed);
+        if (validated && Array.isArray(validated.nodes)) {
+          for (const node of validated.nodes) {
             const vtFile = formData.get(`vtFile_${node.id}`) as File | null;
             if (vtFile && vtFile.size > 0) {
               const uploadedVtPath = await handleImageUpload(vtFile);
@@ -189,9 +200,10 @@ export async function saveProperty(formData: FormData, id?: string) {
             }
           }
         }
-        virtualTourData = parsed as Prisma.InputJsonValue;
+        virtualTourData = validated as Prisma.InputJsonValue;
       } catch (e) {
         console.error("Gagal parse VT JSON", e);
+        return { success: false, error: "Format Virtual Tour tidak valid." };
       }
     }
 
