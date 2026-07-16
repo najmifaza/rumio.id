@@ -39,14 +39,6 @@ export default function OrderPackageModal({
   const [isCopied, setIsCopied] = useState(false);
   const { showToast } = useToast();
 
-
-  if (!isOpen || !selectedPlan) return null;
-
-  const totalAddonsPrice = selectedAddons.reduce((sum, addonId) => {
-    const addon = addons.find(a => a.id === addonId);
-    return sum + (addon ? addon.price : 0);
-  }, 0);
-
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // M-7 FIX: Cleanup timeout on unmount to prevent state update on unmounted component
@@ -55,6 +47,13 @@ export default function OrderPackageModal({
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
     };
   }, []);
+
+  if (!isOpen || !selectedPlan) return null;
+
+  const totalAddonsPrice = selectedAddons.reduce((sum, addonId) => {
+    const addon = addons.find(a => a.id === addonId);
+    return sum + (addon ? addon.price : 0);
+  }, 0);
 
   const handleCopy = () => {
     const account = paymentSettings.payment_bank_account || "1234 5678 90";
