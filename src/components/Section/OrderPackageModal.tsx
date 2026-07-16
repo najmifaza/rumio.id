@@ -48,6 +48,7 @@ export default function OrderPackageModal({
     };
   }, []);
 
+  // NOTE: Early return MUST be after all hooks — Rules of Hooks compliance
   if (!isOpen || !selectedPlan) return null;
 
   const totalAddonsPrice = selectedAddons.reduce((sum, addonId) => {

@@ -45,11 +45,7 @@ export default function Navbar({
     };
   }, []);
 
-  // Jangan tampilkan Navbar di halaman admin
-  if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
-    return null;
-  }
-
+  // NOTE: useMemo MUST be above any early return — Rules of Hooks compliance
   const navLinks = useMemo(() => [
     { name: "Beranda", href: "/", isActive: pathname === "/" },
     {
@@ -74,6 +70,11 @@ export default function Navbar({
       isActive: pathname.startsWith("/property-scout"),
     },
   ], [pathname]);
+
+  // Jangan tampilkan Navbar di halaman admin
+  if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
+    return null;
+  }
 
   return (
     <div
