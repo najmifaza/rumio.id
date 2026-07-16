@@ -26,8 +26,8 @@ export default function Hero() {
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 2xl:px-0">
-        <main className="flex flex-col lg:flex-row items-center pt-24 pb-24 lg:py-0 min-h-screen">
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16">
+        <main className="flex flex-col lg:flex-row items-center pt-24 pb-24 lg:pt-32 lg:pb-24 min-h-screen">
           {/* Left Column (Text & CTAs) */}
           <div className="w-full lg:w-[75%] xl:w-[55%] 2xl:w-[60%] flex flex-col justify-center space-y-6 2xl:space-y-8 relative pt-12 lg:pt-0">
             {/* Badge */}

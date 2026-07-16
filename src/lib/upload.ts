@@ -32,8 +32,8 @@ export async function processAndSaveImage(
   }
 
   // Token rahasia yang sama dengan yang ada di upload.php
-  const secretToken = "RUMIO_ASSET_SECRET_2026_xyz"; 
-  const uploadUrl = "https://asset.rumio.id/upload.php";
+  const secretToken = process.env.ASSET_SECRET_TOKEN || ""; 
+  const uploadUrl = process.env.ASSET_UPLOAD_URL || "";
 
   try {
     const response = await fetch(uploadUrl, {

@@ -287,7 +287,7 @@ export default function PropertiesClient({
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20 font-sans pt-20">
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 2xl:px-0 mt-8">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16 mt-8">
         <Breadcrumbs
           className="mb-6"
           items={[{ label: "Beranda", href: "/" }, { label: "Properti" }]}

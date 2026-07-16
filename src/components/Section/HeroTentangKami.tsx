@@ -27,7 +27,7 @@ export default async function HeroTentangKami() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 2xl:px-0">
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16">
         <div className="max-w-2xl pt-10">
           <Breadcrumbs
             className="mb-8"

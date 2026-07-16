@@ -136,7 +136,7 @@ export default function FindPropertyModal({
             </p>
           </div>
         ) : (
-          <div className="p-0 overflow-y-auto custom-scrollbar">
+          <div className="p-0 overflow-y-auto custom-scrollbar" data-lenis-prevent>
             <div className="relative h-24 bg-[#D98A2C] overflow-hidden flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-r from-[#D98A2C] to-[#D98A2C]/40 z-10" />
               <img

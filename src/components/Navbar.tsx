@@ -88,21 +88,21 @@ export default function Navbar({
         }`}
       >
         <div
-          className="w-full max-w-[1600px] mx-auto px-6 lg:px-12 2xl:px-0 flex items-center justify-between relative z-50 transition-all duration-300"
+          className="w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16 flex items-center justify-between relative z-50 transition-all duration-300"
           style={{
-            paddingTop: isScrolled ? "16px" : "24px",
-            paddingBottom: isScrolled ? "16px" : "24px",
+            paddingTop: isScrolled ? "12px" : "16px",
+            paddingBottom: isScrolled ? "12px" : "16px",
           }}
         >
           {/* LOGO */}
           <div className="flex-1 flex justify-start">
             <Link href="/" className="flex items-center">
-              <img src="/logo.svg" alt="Rumio" className="h-12 w-auto" />
+              <img src="/logo.svg" alt="Rumio" className="h-9 lg:h-10 w-auto" />
             </Link>
           </div>
 
           {/* DESKTOP NAVIGATION */}
-          <nav className="hidden xl:flex flex-shrink-0 items-center gap-4 lg:gap-6 2xl:gap-8 text-base 2xl:text-lg font-semibold text-slate-600">
+          <nav className="hidden xl:flex flex-shrink-0 items-center gap-4 lg:gap-6 2xl:gap-8 text-sm 2xl:text-base font-semibold text-slate-600">
             {navLinks.map((link, index) => (
               <Link
                 key={index}
@@ -121,14 +121,14 @@ export default function Navbar({
             <Button
               variant="outline"
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex gap-2 text-slate-700 bg-white hover:bg-slate-50 border-slate-200 rounded-xl px-4 py-2.5 2xl:px-6 2xl:py-3 text-base 2xl:text-lg font-medium h-auto"
+              className="inline-flex gap-2 text-slate-700 bg-white hover:bg-slate-50 border-slate-200 rounded-xl px-3 py-2 2xl:px-5 2xl:py-2.5 text-sm 2xl:text-base font-medium h-auto"
             >
               <Search className="w-4 h-4 2xl:w-5 2xl:h-5 text-amber-500" />
               Carikan Properti
             </Button>
             <Link href={waLink} target="_blank" rel="noopener noreferrer">
-              <Button className="inline-flex gap-2 rounded-xl px-4 py-2.5 2xl:px-6 2xl:py-3 text-base 2xl:text-lg font-semibold bg-[#25D366] hover:bg-[#20b858] text-white border-none shadow-sm transition-colors h-auto">
-                <WhatsAppIcon width="24" height="24" />
+              <Button className="inline-flex gap-2 rounded-xl px-3 py-2 2xl:px-5 2xl:py-2.5 text-sm 2xl:text-base font-semibold bg-[#25D366] hover:bg-[#20b858] text-white border-none shadow-sm transition-colors h-auto">
+                <WhatsAppIcon width="20" height="20" />
                 Hubungi Kami
               </Button>
             </Link>
