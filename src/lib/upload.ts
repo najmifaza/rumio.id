@@ -1,5 +1,3 @@
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
 import sharp from "sharp";
 
 export async function processAndSaveImage(
@@ -23,20 +21,49 @@ export async function processAndSaveImage(
   }
 
   const fileName = `${uniqueSuffix}-${originalName}`;
-  const uploadDir = join(process.cwd(), "public/uploads", subFolder);
-
-  try {
-    await mkdir(uploadDir, { recursive: true });
-  } catch (e: unknown) {
-    if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
+  
+  // Create FormData for the external PHP server
+  const formData = new FormData();
+  // Convert Node Buffer to Blob for native FormData
+  const blob = new Blob([buffer], { type: mimeType });
+  formData.append("file", blob, fileName);
+  if (subFolder) {
+    formData.append("folder", subFolder);
   }
 
-  const path = join(uploadDir, fileName);
-  await writeFile(path, buffer);
-  
-  // Clean up subFolder for URL to avoid double slashes if it's empty
-  const urlSubFolder = subFolder ? `/${subFolder}` : "";
-  const url = `/uploads${urlSubFolder}/${fileName}`;
+  // Token rahasia yang sama dengan yang ada di upload.php
+  const secretToken = "RUMIO_ASSET_SECRET_2026_xyz"; 
+  const uploadUrl = "https://asset.rumio.id/upload.php";
 
-  return { url, fileName, size: buffer.length, mimeType };
+  try {
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${secretToken}`
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("Asset server error:", response.status, errText);
+      throw new Error("Gagal mengupload gambar ke server asset.");
+    }
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || "Gagal menyimpan file");
+    }
+
+    return { 
+      url: data.url, 
+      fileName: data.fileName, 
+      size: buffer.length, 
+      mimeType 
+    };
+  } catch (error) {
+    console.error("Failed to push image to asset.rumio.id:", error);
+    throw error;
+  }
 }
