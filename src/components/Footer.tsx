@@ -26,9 +26,14 @@ export default function Footer({
   socials = {},
   description = "Solusi terbaik untuk mencari, membeli, dan menyewa properti di kawasan Bintaro dan sekitarnya.",
 }: FooterProps) {
+  // NOTE: usePathname must always be called (Rules of Hooks).
+  // Early return is OK here because usePathname is the ONLY hook in this component.
+  // However, usePathname internally uses useRef/useContext — keeping this pattern
+  // consistent ensures no mismatch when navigating between admin and public pages.
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/admin")) {
+  // Jangan tampilkan Footer di halaman admin
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/login")) {
     return null;
   }
 

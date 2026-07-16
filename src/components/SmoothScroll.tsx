@@ -7,13 +7,20 @@ import { usePathname } from "next/navigation";
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  // Matikan Lenis sepenuhnya jika berada di halaman admin
-  if (pathname && pathname.startsWith("/admin")) {
-    return <>{children}</>;
-  }
+  const isAdmin = pathname?.startsWith("/admin") || pathname?.startsWith("/login");
 
+  // Selalu render ReactLenis agar internal hooks-nya (useRef, useEffect) konsisten
+  // setiap render cycle, sesuai Rules of Hooks.
+  // Gunakan prop `options` untuk menonaktifkan smooth scroll di halaman admin.
   return (
-    <ReactLenis root options={{ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) }}>
+    <ReactLenis
+      root
+      options={
+        isAdmin
+          ? { duration: 0, autoRaf: false }
+          : { duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) }
+      }
+    >
       {children}
     </ReactLenis>
   );
