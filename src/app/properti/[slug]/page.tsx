@@ -347,10 +347,6 @@ export default async function PropertyDetailPage({
                     <tbody className="divide-y divide-slate-100">
                       {[
                         {
-                          label: "ID Properti",
-                          value: property.id,
-                        },
-                        {
                           label: "Tipe Properti",
                           value: property.propertyType || "Rumah",
                         },
